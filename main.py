@@ -5,8 +5,7 @@ import os
 # 添加项目根目录到Python路径
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-from trainer.ft_clip_vit_classifier import CLIPViTFinetunePipeline
-
+from trainer.pipeline_factory import create_pipeline
 
 def main():
     """
@@ -21,8 +20,8 @@ def main():
     if not os.path.exists(args.config):
         raise FileNotFoundError(f"Config file {args.config} not found")
     
-    # 创建pipeline实例
-    pipeline = CLIPViTFinetunePipeline(args.config)
+    # 使用create_pipeline函数创建pipeline实例
+    pipeline = create_pipeline(args.config)
     
     # 调用pipeline的train方法
     pipeline.train()

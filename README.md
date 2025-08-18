@@ -29,7 +29,7 @@ python main.py --config examples/train_full/clip_vit_classifier.yaml
 ### 训练BERT分类器
 
 ```bash
-python examples/train_full/train_bert_classifier.py
+python main.py --config examples/train_full/bert_classifier.yaml
 ```
 
 ## 主要特性
