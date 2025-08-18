@@ -5,6 +5,7 @@ from transformers import (
     PretrainedConfig, 
     CLIPVisionModel, 
     CLIPVisionConfig,
+    CLIPImageProcessor,
     AutoConfig,
     AutoModelForImageClassification
 )
@@ -18,7 +19,9 @@ class CLIPViTClassifierConfig(PretrainedConfig):
     def __init__(
         self,
         id2label: dict,
+        label2id: dict,
         vision_config: Optional[dict] = None,
+        processor_config: Optional[dict] = None,
         classifier_dropout: float = 0.1,
         problem_type: Optional[str] = None,
         **kwargs,
@@ -27,8 +30,8 @@ class CLIPViTClassifierConfig(PretrainedConfig):
         
         # 分类相关配置
         self.id2label = id2label
-        self.label2id = {v: k for k, v in id2label.items()}
-        self.num_labels = len(id2label)
+        self.label2id = label2id
+        self.num_classes = len(id2label)
         self.classifier_dropout = classifier_dropout
         self.problem_type = problem_type
         
@@ -51,6 +54,17 @@ class CLIPViTClassifierConfig(PretrainedConfig):
         
         self.vision_config = CLIPVisionConfig(**vision_config)
 
+        # CLIPImageProcessor 配置
+        if processor_config is None:
+            processor_config = {
+                "image_size": 336,
+                "resample": 3,
+                "do_normalize": True,
+                "mean": [0.48145466, 0.4578275, 0.40821073],
+                "std": [0.26862954, 0.26130258, 0.27577711],
+            }
+        self.processor_config = CLIPImageProcessor(**processor_config)
+
 # 2. 定义模型类
 class CLIPViTForImageClassification(PreTrainedModel):
     config_class = CLIPViTClassifierConfig
@@ -59,15 +73,18 @@ class CLIPViTForImageClassification(PreTrainedModel):
     def __init__(self, config: CLIPViTClassifierConfig):
         super().__init__(config)
         
-        self.num_labels = config.num_labels
-        
+        self.num_classes = config.num_classes
+
         # 使用CLIP的视觉编码器
         self.vision_model = CLIPVisionModel(config.vision_config)
+
+        # 图像处理器
+        self.processor = CLIPImageProcessor(config.processor_config)
         
         # 分类头
         self.classifier = nn.Sequential(
             nn.Dropout(config.classifier_dropout),
-            nn.Linear(config.vision_config.hidden_size, config.num_labels)
+            nn.Linear(config.vision_config.hidden_size, config.num_classes)
         )
         
         # 初始化权重
@@ -78,19 +95,24 @@ class CLIPViTForImageClassification(PreTrainedModel):
         cls,
         clip_model_name: str,
         id2label: dict,
+        label2id: dict,
         **kwargs
     ):
         """从预训练CLIP模型创建分类器"""
         
         # 加载预训练CLIP模型的视觉部分
-        from transformers import CLIPModel
-        clip_model = CLIPModel.from_pretrained(clip_model_name)
+        clip_model = CLIPVisionModel.from_pretrained(clip_model_name)
+        clip_processor = CLIPImageProcessor.from_pretrained(clip_model_name)
         
         # 创建配置
         vision_config = clip_model.config.vision_config.to_dict()
+        processor_config = clip_processor.to_dict()
+        
         config = CLIPViTClassifierConfig(
             id2label=id2label,
+            label2id=label2id,
             vision_config=vision_config,
+            processor_config=processor_config,
             **kwargs
         )
         
