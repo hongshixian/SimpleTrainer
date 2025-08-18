@@ -38,3 +38,7 @@ python main.py --config examples/train_full/bert_classifier.yaml
 - 灵活扩展：模块化设计，易于添加新的模型和训练器
 - 多模型支持：支持多种类型的模型训练
 - 基于Transformers：充分利用Hugging Face Transformers库的功能
+
+## 许可证
+
+本项目基于Apache 2.0协议开源。有关详细信息，请参阅[LICENSE](LICENSE)文件。
