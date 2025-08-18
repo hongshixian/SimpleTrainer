@@ -3,7 +3,7 @@ import yaml
 from transformers import Trainer, TrainingArguments
 from pretrained_model.clip_vit_classifier import CLIPViTClassifier, CLIPViTClassifierConfig
 from dataset.image_dataset import ImageDatasetFromJsonline
-from transformers import DataCollatorWithPadding
+from utils.metric_utils import compute_metrics
 
 class CLIPViTFinetunePipeline:
     """
@@ -23,7 +23,7 @@ class CLIPViTFinetunePipeline:
         self.model = self._init_model()
         
         # 初始化数据集
-        self.dataset = self._init_dataset()
+        self.train_dataset, self.val_dataset = self._init_dataset()
 
         # 初始化data collator
         self.data_collator = self._init_data_collator()
@@ -50,13 +50,21 @@ class CLIPViTFinetunePipeline:
     def _init_dataset(self):
         """
         初始化数据集
-        :return: 数据集实例
+        :return: (训练数据集实例, 验证数据集实例)
         """
-        # 从配置创建数据集
-        dataset = ImageDatasetFromJsonline(
+        # 从配置创建训练数据集
+        train_dataset = ImageDatasetFromJsonline(
             jsonline_path=self.config.get('train_jsonline_path', None)
         )
-        return dataset
+        
+        # 从配置创建验证数据集
+        val_dataset = None
+        if self.config.get('val_jsonline_path', None):
+            val_dataset = ImageDatasetFromJsonline(
+                jsonline_path=self.config.get('val_jsonline_path', None)
+            )
+        
+        return train_dataset, val_dataset
 
     def _init_data_collator(self):
         """
@@ -82,7 +90,6 @@ class CLIPViTFinetunePipeline:
             # 返回处理后的输入和标签
             return {
                 'pixel_values': inputs['pixel_values'],
-                'attention_mask': inputs['attention_mask'],
                 'labels': labels
             }
         
@@ -114,10 +121,10 @@ class CLIPViTFinetunePipeline:
         trainer = Trainer(
             model=self.model,
             args=training_args,
-            train_dataset=self.dataset,
-            eval_dataset=self.dataset,  # 这里应该使用验证数据集
+            train_dataset=self.train_dataset,
+            eval_dataset=self.val_dataset,  # 使用验证数据集
             data_collator=self.data_collator,
-            # compute_metrics=compute_metrics,  # 如果需要评估指标
+            compute_metrics=compute_metrics,  # 添加评估指标
         )
         
         return trainer
