@@ -1,0 +1,37 @@
+### model
+model_name: bert-base-uncased
+
+# Label mappings (example for a 3-class classification task)
+id2label:
+  0: "positive"
+  1: "negative"
+  2: "neutral"
+
+label2id:
+  "positive": 0
+  "negative": 1
+  "neutral": 2
+
+### dataset
+train_jsonline_path: path/to/your/train.jsonl
+val_jsonline_path: path/to/your/val.jsonl
+max_length: 512
+
+### output
+output_dir: saves/bert_classifier/full/sft
+logging_dir: logs/bert_classifier
+logging_steps: 10
+save_steps: 500
+save_total_limit: 2
+overwrite_output_dir: true
+report_to: tensorboard
+
+### train
+num_train_epochs: 5
+per_device_train_batch_size: 8
+per_device_eval_batch_size: 8
+warmup_steps: 500
+weight_decay: 0.01
+evaluation_strategy: steps
+eval_steps: 500
+load_best_model_at_end: true

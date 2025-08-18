@@ -20,8 +20,16 @@ pip install -r requirements.txt
 
 ## 使用方法
 
+### 训练CLIP ViT分类器
+
 ```bash
-python main.py --config config.yaml
+python main.py --config examples/train_full/clip_vit_classifier.yaml
+```
+
+### 训练BERT分类器
+
+```bash
+python examples/train_full/train_bert_classifier.py
 ```
 
 ## 主要特性
