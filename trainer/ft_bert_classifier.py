@@ -25,6 +25,9 @@ class BertFinetunePipeline:
         # 初始化数据集
         self.train_dataset, self.val_dataset = self._init_dataset()
 
+        # 初始化data collator
+        self.data_collator = self._init_data_collator()
+        
         # 初始化训练器
         self.trainer = self._init_trainer()
     
@@ -51,22 +54,49 @@ class BertFinetunePipeline:
         """
         # 从配置创建训练数据集
         train_dataset = TextDatasetFromJsonline(
-            jsonline_path=self.config.get('train_jsonline_path', None),
-            tokenizer=self.model.tokenizer,
-            max_length=self.config.get('max_length', 512)
+            jsonline_path=self.config.get('train_jsonline_path', None)
         )
         
         # 从配置创建验证数据集
         val_dataset = None
         if self.config.get('val_jsonline_path', None):
             val_dataset = TextDatasetFromJsonline(
-                jsonline_path=self.config.get('val_jsonline_path', None),
-                tokenizer=self.model.tokenizer,
-                max_length=self.config.get('max_length', 512)
+                jsonline_path=self.config.get('val_jsonline_path', None)
             )
         
         return train_dataset, val_dataset
 
+    def _init_data_collator(self):
+        """
+        初始化data collator
+        :return: DataCollator实例或function
+        """
+        # 定义data collator函数
+        def data_collator(batch):
+            # 提取文本和标签
+            texts = [item['text'] for item in batch]
+            labels = [item['label'] for item in batch]
+            
+            # 使用分词器处理文本
+            encoding = self.model.tokenizer(
+                texts,
+                truncation=True,
+                padding=True,
+                return_tensors='pt'
+            )
+            
+            # 将标签转换为label_id
+            label_ids = [self.model.config.label2id[label] for label in labels]
+            
+            # 返回字典格式
+            return {
+                'input_ids': encoding['input_ids'],
+                'attention_mask': encoding['attention_mask'],
+                'labels': torch.tensor(label_ids)
+            }
+        
+        return data_collator
+    
     def _init_trainer(self):
         """
         初始化训练器
@@ -96,6 +126,7 @@ class BertFinetunePipeline:
             args=training_args,
             train_dataset=self.train_dataset,
             eval_dataset=self.val_dataset,  # 使用验证数据集
+            data_collator=self.data_collator,  # 使用data collator
             compute_metrics=compute_metrics,  # 添加评估指标
         )
         
