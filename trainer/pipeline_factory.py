@@ -1,6 +1,7 @@
 import yaml
 from trainer.ft_clip_vit_classifier import CLIPViTFinetunePipeline
 from trainer.ft_bert_classifier import BertFinetunePipeline
+from trainer.ft_resnet_classifier import ResNetFinetunePipeline
 
 
 def create_pipeline(config_path):
@@ -21,5 +22,7 @@ def create_pipeline(config_path):
         return CLIPViTFinetunePipeline(config_path)
     elif pipeline_type == 'bert':
         return BertFinetunePipeline(config_path)
+    elif pipeline_type == 'resnet':
+        return ResNetFinetunePipeline(config_path)
     else:
         raise ValueError(f"Unsupported pipeline type: {pipeline_type}")

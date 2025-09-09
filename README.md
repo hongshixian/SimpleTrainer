@@ -32,12 +32,28 @@ python main.py --config examples/train_full/clip_vit_classifier.yaml
 python main.py --config examples/train_full/bert_classifier.yaml
 ```
 
+### 训练ResNet分类器
+
+1. 准备数据集，格式为jsonline文件，每行包含`image_path`和`label`字段。
+2. 修改`examples/train_full/resnet_classifier.yaml`配置文件，设置数据集路径、模型参数等。
+3. 运行训练命令：
+
+```bash
+python main.py --config examples/train_full/resnet_classifier.yaml
+```
+
 ## 主要特性
 
 - 简单易用：提供简洁的API，方便快速上手
 - 灵活扩展：模块化设计，易于添加新的模型和训练器
 - 多模型支持：支持多种类型的模型训练
 - 基于Transformers：充分利用Hugging Face Transformers库的功能
+
+## 支持的模型
+
+- CLIP ViT分类器
+- BERT分类器
+- ResNet分类器
 
 ## 许可证
 
