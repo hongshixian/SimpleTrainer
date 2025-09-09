@@ -1,5 +1,6 @@
 ### pipeline
 pipeline_type: resnet
+dataset_type: image
 
 ### model
 resnet_type: resnet18

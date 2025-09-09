@@ -1,5 +1,6 @@
 ### pipeline
 type: clip_vit
+dataset_type: image
 
 ### model
 model_name: openai/clip-vit-large-patch14
