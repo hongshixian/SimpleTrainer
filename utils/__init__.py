@@ -1,6 +1,5 @@
-from .metric_utils import compute_metrics, MetricTracker
+from .metric_utils import compute_metrics
 
 __all__ = [
-    "compute_metrics",
-    "MetricTracker",
+    "compute_metrics"
 ]

@@ -1,0 +1,114 @@
+import os
+import json
+from datasets import Dataset as HFDataset, load_dataset
+from typing import Dict, Any, Optional, Union
+from dataset.images.image_dataset import load_image_data_from_jsonl
+from dataset.texts.text_dataset import load_text_data_from_jsonl
+from torchvision import transforms
+from PIL import Image
+
+
+def load_image_dataset_from_jsonl(jsonl_path: str, transform=None) -> HFDataset:
+    """
+    从jsonl文件加载图像数据集
+    :param jsonl_path: jsonl文件路径
+    :param transform: 图像变换
+    :return: HFDataset实例
+    """
+    return load_image_data_from_jsonl(jsonl_path, transform)
+
+
+def load_text_dataset_from_jsonl(jsonl_path: str) -> HFDataset:
+    """
+    从jsonl文件加载文本数据集
+    :param jsonl_path: jsonl文件路径
+    :return: HFDataset实例
+    """
+    return load_text_data_from_jsonl(jsonl_path)
+
+
+def get_dataset(dataset_args: dict) -> dict:
+    """
+    根据配置获取数据集
+    :param dataset_args: 数据集配置参数
+    :return: 包含train_dataset和eval_dataset的字典，值为Hugging Face Dataset类型
+    """
+    # 检查是否指定了Hugging Face数据集名称
+    hf_dataset_name = dataset_args.get('hf_dataset_name')
+    if hf_dataset_name:
+        return get_hf_dataset(dataset_args)
+    
+    # 获取数据集类型
+    dataset_type = dataset_args.get('dataset_type', 'image')
+    
+    # 获取训练和验证数据路径
+    train_path = dataset_args.get('train_jsonline_path')
+    val_path = dataset_args.get('val_jsonline_path')
+    
+    # 获取标签映射
+    label2id = dataset_args.get('label2id', {})
+    id2label = dataset_args.get('id2label', {})
+    
+    # 创建图像变换
+    transform = None
+    if dataset_type == 'image':
+        transform = transforms.Compose([
+            transforms.Resize((224, 224)),
+            transforms.ToTensor(),
+            transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+        ])
+    
+    # 加载训练数据集
+    train_dataset = None
+    if train_path and os.path.exists(train_path):
+        if dataset_type == 'image':
+            train_dataset = load_image_dataset_from_jsonl(train_path, transform)
+        elif dataset_type == 'text':
+            train_dataset = load_text_dataset_from_jsonl(train_path)
+    
+    # 加载验证数据集
+    eval_dataset = None
+    if val_path and os.path.exists(val_path):
+        if dataset_type == 'image':
+            eval_dataset = load_image_dataset_from_jsonl(val_path, transform)
+        elif dataset_type == 'text':
+            eval_dataset = load_text_dataset_from_jsonl(val_path)
+    
+    return {
+        'train_dataset': train_dataset,
+        'eval_dataset': eval_dataset
+    }
+
+
+def get_hf_dataset(dataset_args: dict) -> dict:
+    """
+    从Hugging Face Hub加载数据集
+    :param dataset_args: 数据集配置参数
+    :return: 包含train_dataset和eval_dataset的字典，值为Hugging Face Dataset类型
+    """
+    # 获取数据集名称和配置
+    hf_dataset_name = dataset_args.get('hf_dataset_name')
+    hf_dataset_config = dataset_args.get('hf_dataset_config')
+    
+    # 获取训练和验证数据的split名称
+    train_split = dataset_args.get('train_split', 'train')
+    eval_split = dataset_args.get('eval_split', 'validation')
+    
+    # 加载训练数据集
+    train_dataset = load_dataset(hf_dataset_name, name=hf_dataset_config, split=train_split)
+    
+    # 加载验证数据集
+    try:
+        eval_dataset = load_dataset(hf_dataset_name, name=hf_dataset_config, split=eval_split)
+    except:
+        # 如果没有验证集，则使用测试集
+        try:
+            eval_dataset = load_dataset(hf_dataset_name, name=hf_dataset_config, split='test')
+        except:
+            # 如果也没有测试集，则从训练集中划分一部分作为验证集
+            eval_dataset = None
+    
+    return {
+        'train_dataset': train_dataset,
+        'eval_dataset': eval_dataset
+    }

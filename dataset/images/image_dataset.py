@@ -1,4 +1,6 @@
+import json
 from torch.utils.data import Dataset
+from datasets import Dataset as HFDataset
 from PIL import Image
 
 
@@ -91,5 +93,47 @@ class ImageDatasetFromJsonline(Dataset):
             'image': image,
             'label': label
         }
+
+
+def load_image_data_from_jsonl(jsonline_path, transform=None):
+    """
+    从jsonline文件加载图像数据并转换为Hugging Face Dataset格式
+    :param jsonline_path: jsonline文件路径
+    :param transform: 可选的图像变换
+    :return: Hugging Face Dataset实例
+    """
+    # 加载数据
+    data = []
+    with open(jsonline_path, 'r', encoding='utf-8') as f:
+        for line in f:
+            data.append(json.loads(line))
+    
+    image_paths = [item['image_path'] for item in data]
+    labels = [item['label'] for item in data]
+    
+    # 创建Hugging Face Dataset
+    hf_dataset = HFDataset.from_dict({
+        'image_path': image_paths,
+        'label': labels
+    })
+    
+    # 添加图像数据到dataset
+    def process_example(example):
+        # 加载图像
+        image = Image.open(example['image_path']).convert('RGB')
+        
+        # 应用变换
+        if transform:
+            image = transform(image)
+            
+        return {
+            'image': image,
+            'label': example['label']
+        }
+    
+    # 应用处理函数
+    hf_dataset = hf_dataset.map(process_example)
+    
+    return hf_dataset
         
     

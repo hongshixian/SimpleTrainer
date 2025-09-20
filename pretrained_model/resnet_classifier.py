@@ -5,8 +5,10 @@ from transformers import (
     PretrainedConfig
 )
 from transformers.modeling_outputs import ImageClassifierOutput
-from typing import Optional, Union
+from typing import Optional, Union, Dict, Any
 from network.resnet import resnet18, resnet34, resnet50, resnet101, resnet152
+from torchvision import transforms
+from PIL import Image
 
 
 class ResNetClassifierConfig(PretrainedConfig):
@@ -64,7 +66,22 @@ class ResNetForImageClassification(PreTrainedModel):
         
         # 初始化权重
         self.post_init()
-    
+        
+        # 定义训练和验证时的预处理变换
+        self.train_transform = transforms.Compose([
+            transforms.RandomResizedCrop(224),
+            transforms.RandomHorizontalFlip(),
+            transforms.ToTensor(),
+            transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+        ])
+        
+        self.eval_transform = transforms.Compose([
+            transforms.Resize(256),
+            transforms.CenterCrop(224),
+            transforms.ToTensor(),
+            transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+        ])
+
     @classmethod
     def from_pretrained_model(
         cls,
@@ -89,7 +106,35 @@ class ResNetForImageClassification(PreTrainedModel):
         model = cls(config)
         
         return model
-    
+
+
+    def preprocess(self, examples: Dict[str, Any], is_train: bool = False) -> Dict[str, Any]:
+        """
+        对图像数据进行预处理
+        :param examples: 包含图像数据的字典
+        :param is_train: 是否为训练模式
+        :return: 预处理后的数据字典
+        """
+        # 获取变换方式
+        transform = self.train_transform if is_train else self.eval_transform
+        
+        # 处理单个图像或批量图像
+        if isinstance(examples['image'], list):
+            # 批量处理
+            images = [transform(image.convert('RGB')) for image in examples['image']]
+        else:
+            # 单个图像处理
+            images = transform(examples['image'].convert('RGB'))
+            
+        # 更新数据字典
+        examples['pixel_values'] = images
+
+        # 将标签映射为ID
+        if 'label' in examples:
+            examples['label'] = [self.config.label2id[label] for label in examples['label']]
+        
+        return examples
+
     def forward(
         self,
         pixel_values: Optional[torch.FloatTensor] = None,
@@ -135,7 +180,7 @@ class ResNetForImageClassification(PreTrainedModel):
             loss=loss,
             logits=logits,
         )
-    
+
     def freeze_resnet(self):
         """冻结ResNet的参数"""
         for param in self.resnet.parameters():
