@@ -91,7 +91,7 @@ train_args:
 ## 支持的模型
 
 - ResNet 分类器
-- CLIP-ViT 分类器
+- ViT 分类器
 
 ## 许可证
 

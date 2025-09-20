@@ -1,9 +1,9 @@
-from .clip_vit_classifier import CLIPViTClassifierConfig, CLIPViTForImageClassification
 from .resnet_classifier import ResNetClassifierConfig, ResNetForImageClassification
+from .vit_classifier import ViTClassifierConfig, ViTForImageClassification
 
 __all__ = [
-    "CLIPViTClassifierConfig",
-    "CLIPViTForImageClassification",
     "ResNetClassifierConfig",
-    "ResNetForImageClassification"
+    "ResNetForImageClassification",
+    "ViTClassifierConfig",
+    "ViTForImageClassification"
 ]

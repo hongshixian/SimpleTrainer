@@ -22,6 +22,7 @@ hf-transfer
 safetensors<=0.5.3
 timm
 torchvision
+hf_xet
 # python
 fire
 omegaconf

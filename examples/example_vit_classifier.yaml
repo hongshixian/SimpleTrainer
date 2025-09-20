@@ -1,0 +1,39 @@
+### pipeline
+stage: clst
+experiment_name: 0919_debug_train_vit
+
+### model
+model_args:
+  model_type: vit_classifier
+  id2label:
+    0: "angular_leaf_spot"
+    1: "bean_rust"
+    2: "healthy"
+  label2id:
+    "angular_leaf_spot": 0
+    "bean_rust": 1
+    "healthy": 2
+  model_name: google/vit-base-patch16-224
+  num_labels: 3
+
+### dataset
+# 使用Hugging Face Hub数据集的配置示例
+dataset_args:
+  hf_dataset_name: "./data_cache/beans"
+  hf_dataset_config: null
+  train_split: "train"
+  eval_split: "validation"
+
+### train
+train_args:
+  logging_steps: 10
+  save_steps: 500
+  save_total_limit: 1
+  num_train_epochs: 5
+  per_device_train_batch_size: 8
+  per_device_eval_batch_size: 8
+  warmup_steps: 500
+  weight_decay: 0.01
+  eval_strategy: steps
+  eval_steps: 500
+  load_best_model_at_end: true

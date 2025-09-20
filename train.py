@@ -4,9 +4,9 @@
 """
 通用训练脚本
 """
-from train.tuner import run_exp
 import os
-# os.environ['HF_ENDPOINT'] = 'https://hf-mirror.com'
+os.environ['HF_ENDPOINT'] = 'https://hf-mirror.com'
+from train.tuner import run_exp
 
 def main():
     run_exp()

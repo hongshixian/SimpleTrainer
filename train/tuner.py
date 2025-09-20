@@ -5,7 +5,7 @@ import yaml
 from .clst import run_clst
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--config", "-c", type=str, default="examples/example_resnet_classifier.yaml", help="Path to the yaml config file.")
+parser.add_argument("--config", "-c", type=str, default="examples/example_vit_classifier.yaml", help="Path to the yaml config file.")
 
 def get_args() -> argparse.Namespace:
     args = parser.parse_args()
