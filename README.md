@@ -90,9 +90,33 @@ train_args:
 
 ## 支持的模型
 
-- ResNet 分类器
-- ViT 分类器
+- ResNet 图像分类器
+- ViT 图像分类器
 - Wav2Vec2 音频分类器
+- BERT 文本分类器
+
+## BERT 文本分类器使用说明
+
+### 训练
+
+要使用BERT文本分类器进行训练，可以按照以下步骤操作：
+
+1. 准备数据集：创建一个jsonl格式的文件，每行包含一个文本样本和对应的标签，例如：
+   ```json
+   {"text": "This movie is absolutely fantastic!", "label": "positive"}
+   {"text": "The worst film I've ever seen.", "label": "negative"}
+   ```
+
+2. 创建配置文件：参考 `examples/example_bert_classifier_local.yaml` 文件创建自己的配置文件。
+
+3. 运行训练命令：
+   ```bash
+   python train.py --config your_config_file.yaml
+   ```
+
+### 推理
+
+训练完成后，可以使用类似 `inference_bert.py` 的脚本对新文本进行情感分析或其他文本分类任务。
 
 ## 许可证
 

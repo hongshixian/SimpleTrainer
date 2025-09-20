@@ -8,15 +8,15 @@ from transformers import (
     AutoConfig
 )
 from transformers.modeling_outputs import SequenceClassifierOutput
-from typing import Optional, Union
+from typing import Optional, Union, Dict, Any
 
 class BertClassifierConfig(PretrainedConfig):
     model_type = "bert_classifier"
     
     def __init__(
         self,
-        id2label: dict,
-        label2id: dict,
+        id2label: dict = None,
+        label2id: dict = None,
         model_name: str = "bert-base-uncased",
         classifier_dropout: float = 0.1,
         problem_type: Optional[str] = None,
@@ -25,9 +25,9 @@ class BertClassifierConfig(PretrainedConfig):
         super().__init__(**kwargs)
         
         # 分类相关配置
-        self.id2label = id2label
-        self.label2id = label2id
-        self.num_classes = len(id2label)
+        self.id2label = id2label if id2label is not None else {}
+        self.label2id = label2id if label2id is not None else {}
+        self.num_classes = len(self.id2label) if self.id2label else 0
         self.classifier_dropout = classifier_dropout
         self.problem_type = problem_type
         self.model_name = model_name
@@ -87,6 +87,105 @@ class BertForTextClassification(PreTrainedModel):
         
         return model
     
+    def preprocess(self, examples: Dict[str, Any], is_train: bool = False) -> Dict[str, Any]:
+        """
+        对文本数据进行预处理
+        :param examples: 包含文本数据的字典
+        :param is_train: 是否为训练模式
+        :return: 预处理后的数据字典
+        """
+        # 创建一个新的字典来存储预处理后的数据
+        processed_examples = {}
+        
+        # 处理单个文本或批量文本
+        if 'text' in examples:
+            text_data = examples['text']
+        else:
+            raise KeyError("No text data found in examples. Available keys: {}".format(list(examples.keys())))
+        
+        # 如果是单个文本
+        if isinstance(text_data, str):
+            # 使用tokenizer处理文本
+            processed = self.tokenizer(
+                text_data,
+                padding='max_length',
+                truncation=True,
+                max_length=512,
+                return_tensors="pt"
+            )
+            input_ids = processed.input_ids.squeeze(0)
+            attention_mask = processed.attention_mask.squeeze(0)
+            
+        # 如果是批量文本
+        elif isinstance(text_data, list):
+            # 使用tokenizer处理批量文本
+            processed = self.tokenizer(
+                text_data,
+                padding=True,
+                truncation=True,
+                max_length=512,
+                return_tensors="pt"
+            )
+            input_ids = processed.input_ids
+            attention_mask = processed.attention_mask
+        else:
+            raise ValueError("Invalid text data format")
+            
+        # 更新数据字典
+        processed_examples['input_ids'] = input_ids
+        processed_examples['attention_mask'] = attention_mask
+
+        # 处理标签
+        if 'labels' in examples:
+            labels = examples['labels']
+            # 如果标签是字符串，需要转换为数字
+            if isinstance(labels, list):
+                if len(labels) > 0 and isinstance(labels[0], str):
+                    # 将字符串标签转换为数字标签
+                    if hasattr(self.config, 'label2id') and self.config.label2id:
+                        labels = [self.config.label2id.get(label, 0) for label in labels]
+                    else:
+                        # 如果没有label2id映射，尝试使用默认映射
+                        default_label2id = {"negative": 0, "positive": 1}
+                        labels = [default_label2id.get(label, 0) for label in labels]
+                processed_examples['labels'] = torch.tensor(labels, dtype=torch.long)
+            else:
+                if isinstance(labels, str):
+                    # 将字符串标签转换为数字标签
+                    if hasattr(self.config, 'label2id') and self.config.label2id:
+                        labels = self.config.label2id.get(labels, 0)
+                    else:
+                        # 如果没有label2id映射，尝试使用默认映射
+                        default_label2id = {"negative": 0, "positive": 1}
+                        labels = default_label2id.get(labels, 0)
+                processed_examples['labels'] = torch.tensor([labels], dtype=torch.long)
+            processed_examples['label'] = processed_examples['labels']
+        elif 'label' in examples:
+            labels = examples['label']
+            # 如果标签是字符串，需要转换为数字
+            if isinstance(labels, list):
+                if len(labels) > 0 and isinstance(labels[0], str):
+                    # 将字符串标签转换为数字标签
+                    if hasattr(self.config, 'label2id') and self.config.label2id:
+                        labels = [self.config.label2id.get(label, 0) for label in labels]
+                    else:
+                        # 如果没有label2id映射，尝试使用默认映射
+                        default_label2id = {"negative": 0, "positive": 1}
+                        labels = [default_label2id.get(label, 0) for label in labels]
+                processed_examples['label'] = torch.tensor(labels, dtype=torch.long)
+            else:
+                if isinstance(labels, str):
+                    # 将字符串标签转换为数字标签
+                    if hasattr(self.config, 'label2id') and self.config.label2id:
+                        labels = self.config.label2id.get(labels, 0)
+                    else:
+                        # 如果没有label2id映射，尝试使用默认映射
+                        default_label2id = {"negative": 0, "positive": 1}
+                        labels = default_label2id.get(labels, 0)
+                processed_examples['label'] = torch.tensor([labels], dtype=torch.long)
+        
+        return processed_examples
+
     def forward(
         self,
         input_ids: Optional[torch.LongTensor] = None,
@@ -115,22 +214,22 @@ class BertForTextClassification(PreTrainedModel):
         if labels is not None:
             # 根据问题类型计算损失
             if self.config.problem_type is None:
-                if self.num_labels == 1:
+                if self.num_classes == 1:
                     self.config.problem_type = "regression"
-                elif self.num_labels > 1:
+                elif self.num_classes > 1:
                     self.config.problem_type = "single_label_classification"
                 else:
                     self.config.problem_type = "multi_label_classification"
             
             if self.config.problem_type == "regression":
                 loss_fct = nn.MSELoss()
-                if self.num_labels == 1:
+                if self.num_classes == 1:
                     loss = loss_fct(logits.squeeze(), labels.squeeze())
                 else:
                     loss = loss_fct(logits, labels)
             elif self.config.problem_type == "single_label_classification":
                 loss_fct = nn.CrossEntropyLoss()
-                loss = loss_fct(logits.view(-1, self.num_labels), labels.view(-1))
+                loss = loss_fct(logits.view(-1, self.num_classes), labels.view(-1))
             elif self.config.problem_type == "multi_label_classification":
                 loss_fct = nn.BCEWithLogitsLoss()
                 loss = loss_fct(logits, labels)
