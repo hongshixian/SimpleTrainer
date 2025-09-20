@@ -22,12 +22,6 @@ dataset_args:
   train_split: "train"
   eval_split: "validation"
 
-# 使用本地jsonl文件的配置示例（注释掉）
-# dataset_args:
-#   dataset_type: image_classification
-#   train_jsonline_path: path/to/your/train.jsonl
-#   val_jsonline_path: path/to/your/val.jsonl
-
 ### train
 train_args:
   logging_steps: 10
