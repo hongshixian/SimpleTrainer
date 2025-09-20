@@ -1,7 +1,6 @@
 import torch
 import torch.nn as nn
 from transformers import (
-    PreTrainedModel, 
     PretrainedConfig,
     AutoConfig,
     AutoModelForImageClassification
@@ -11,6 +10,7 @@ from typing import Optional, Union, Dict, Any
 from network.resnet import resnet18, resnet34, resnet50, resnet101, resnet152
 from torchvision import transforms
 from PIL import Image
+from .base_classifier import ImageClassifierBase
 
 
 class ResNetClassifierConfig(PretrainedConfig):
@@ -37,9 +37,8 @@ class ResNetClassifierConfig(PretrainedConfig):
         self.resnet_type = resnet_type
 
 
-class ResNetForImageClassification(PreTrainedModel):
+class ResNetForImageClassification(ImageClassifierBase):
     config_class = ResNetClassifierConfig
-    main_input_name = "pixel_values"
     
     def __init__(self, config: ResNetClassifierConfig):
         super().__init__(config)
@@ -166,9 +165,9 @@ class ResNetForImageClassification(PreTrainedModel):
         labels: Optional[torch.LongTensor] = None,
         return_dict: Optional[bool] = None,
         **kwargs
-    ) -> Union[tuple, ImageClassifierOutput]:
+    ) -> ImageClassifierOutput:
         
-        return_dict = return_dict if return_dict is not None else self.config.use_return_dict
+        return_dict = True  # 强制返回dict格式
         
         # 获取ResNet输出
         logits = self.resnet(pixel_values)
@@ -196,10 +195,6 @@ class ResNetForImageClassification(PreTrainedModel):
             elif self.config.problem_type == "multi_label_classification":
                 loss_fct = nn.BCEWithLogitsLoss()
                 loss = loss_fct(logits, labels)
-        
-        if not return_dict:
-            output = (logits,)
-            return ((loss,) + output) if loss is not None else output
         
         return ImageClassifierOutput(
             loss=loss,

@@ -1,7 +1,6 @@
 import torch
 import torch.nn as nn
 from transformers import (
-    PreTrainedModel, 
     PretrainedConfig, 
     AutoModel, 
     AutoTokenizer,
@@ -9,6 +8,7 @@ from transformers import (
 )
 from transformers.modeling_outputs import SequenceClassifierOutput
 from typing import Optional, Union, Dict, Any
+from .base_classifier import TextClassifierBase
 
 class BertClassifierConfig(PretrainedConfig):
     model_type = "bert_classifier"
@@ -33,9 +33,8 @@ class BertClassifierConfig(PretrainedConfig):
         self.model_name = model_name
 
 
-class BertForTextClassification(PreTrainedModel):
+class BertForTextClassification(TextClassifierBase):
     config_class = BertClassifierConfig
-    main_input_name = "input_ids"
     
     def __init__(self, config: BertClassifierConfig):
         super().__init__(config)
@@ -193,9 +192,9 @@ class BertForTextClassification(PreTrainedModel):
         labels: Optional[torch.LongTensor] = None,
         return_dict: Optional[bool] = None,
         **kwargs
-    ) -> Union[tuple, SequenceClassifierOutput]:
+    ) -> SequenceClassifierOutput:
         
-        return_dict = return_dict if return_dict is not None else self.config.use_return_dict
+        return_dict = True  # 强制返回dict格式
         
         # 获取BERT输出
         outputs = self.bert(
@@ -233,10 +232,6 @@ class BertForTextClassification(PreTrainedModel):
             elif self.config.problem_type == "multi_label_classification":
                 loss_fct = nn.BCEWithLogitsLoss()
                 loss = loss_fct(logits, labels)
-        
-        if not return_dict:
-            output = (logits,) + outputs[2:]
-            return ((loss,) + output) if loss is not None else output
         
         return SequenceClassifierOutput(
             loss=loss,

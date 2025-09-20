@@ -1,7 +1,6 @@
 import torch
 import torch.nn as nn
 from transformers import (
-    PreTrainedModel, 
     PretrainedConfig,
     AutoConfig,
     AutoModelForImageClassification,
@@ -11,6 +10,7 @@ from transformers.modeling_outputs import ImageClassifierOutput
 from typing import Optional, Union, Dict, Any
 from torchvision import transforms
 from PIL import Image
+from .base_classifier import ImageClassifierBase
 
 
 class ViTClassifierConfig(PretrainedConfig):
@@ -37,9 +37,8 @@ class ViTClassifierConfig(PretrainedConfig):
         self.model_name = model_name
 
 
-class ViTForImageClassification(PreTrainedModel):
+class ViTForImageClassification(ImageClassifierBase):
     config_class = ViTClassifierConfig
-    main_input_name = "pixel_values"
     
     def __init__(self, config: ViTClassifierConfig):
         super().__init__(config)
@@ -154,9 +153,9 @@ class ViTForImageClassification(PreTrainedModel):
         labels: Optional[torch.LongTensor] = None,
         return_dict: Optional[bool] = None,
         **kwargs
-    ) -> Union[tuple, ImageClassifierOutput]:
+    ) -> ImageClassifierOutput:
         
-        return_dict = return_dict if return_dict is not None else self.config.use_return_dict
+        return_dict = True  # 强制返回dict格式
         
         # 获取ViT输出
         outputs = self.vit(pixel_values)
@@ -191,10 +190,6 @@ class ViTForImageClassification(PreTrainedModel):
             elif self.config.problem_type == "multi_label_classification":
                 loss_fct = nn.BCEWithLogitsLoss()
                 loss = loss_fct(logits, labels)
-        
-        if not return_dict:
-            output = (logits,)
-            return ((loss,) + output) if loss is not None else output
         
         return ImageClassifierOutput(
             loss=loss,

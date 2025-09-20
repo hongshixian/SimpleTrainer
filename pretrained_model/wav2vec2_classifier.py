@@ -1,7 +1,6 @@
 import torch
 import torch.nn as nn
 from transformers import (
-    PreTrainedModel, 
     PretrainedConfig,
     Wav2Vec2Model,
     Wav2Vec2Processor
@@ -11,6 +10,7 @@ from transformers.modeling_outputs import SequenceClassifierOutput
 from typing import Optional, Union, Dict, Any
 import librosa
 import numpy as np
+from .base_classifier import AudioClassifierBase
 
 
 class Wav2Vec2ClassifierConfig(PretrainedConfig):
@@ -39,9 +39,8 @@ class Wav2Vec2ClassifierConfig(PretrainedConfig):
         self.sampling_rate = sampling_rate
 
 
-class Wav2Vec2ForAudioClassification(PreTrainedModel):
+class Wav2Vec2ForAudioClassification(AudioClassifierBase):
     config_class = Wav2Vec2ClassifierConfig
-    main_input_name = "input_values"
     
     def __init__(self, config: Wav2Vec2ClassifierConfig):
         super().__init__(config)
@@ -180,9 +179,9 @@ class Wav2Vec2ForAudioClassification(PreTrainedModel):
         labels: Optional[torch.LongTensor] = None,
         return_dict: Optional[bool] = None,
         **kwargs
-    ) -> Union[tuple, SequenceClassifierOutput]:
+    ) -> SequenceClassifierOutput:
         
-        return_dict = return_dict if return_dict is not None else self.config.use_return_dict
+        return_dict = True  # 强制返回dict格式
         
         # 获取Wav2Vec2输出
         outputs = self.wav2vec2(input_values)
@@ -217,10 +216,6 @@ class Wav2Vec2ForAudioClassification(PreTrainedModel):
             elif self.config.problem_type == "multi_label_classification":
                 loss_fct = nn.BCEWithLogitsLoss()
                 loss = loss_fct(logits, labels)
-        
-        if not return_dict:
-            output = (logits,)
-            return ((loss,) + output) if loss is not None else output
         
         return SequenceClassifierOutput(
             loss=loss,
