@@ -1,5 +1,5 @@
 ### pipeline
-stage: ct
+stage: clst
 experiment_name: 0919_debug_train_resnet
 
 ### model

@@ -22,7 +22,7 @@ SimpleTrainer/
 ├── network/              # 网络模型定义
 ├── pretrained_model/     # 预训练模型定义
 ├── train/                # 训练流程实现
-│   └── ct/               # 对比训练流程
+│   └── clst/             # 分类器训练流程
 ├── utils/                # 工具函数
 ├── train.py              # 训练入口文件
 └── requirements.txt      # 项目依赖
@@ -60,7 +60,7 @@ tensorboard --logdir logs
 
 配置文件使用 YAML 格式，主要包含以下几个部分：
 
-- `stage`: 训练阶段（目前支持 `ct` 对比训练）
+- `stage`: 训练阶段（目前支持 `clst` 分类器训练）
 - `experiment_name`: 实验名称
 - `model_args`: 模型参数配置
 - `dataset_args`: 数据集配置
@@ -68,7 +68,7 @@ tensorboard --logdir logs
 
 示例配置文件：
 ```yaml
-stage: ct
+stage: clst
 experiment_name: example_experiment
 
 model_args:

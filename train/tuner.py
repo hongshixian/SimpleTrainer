@@ -2,7 +2,7 @@ import os
 from typing import TYPE_CHECKING, Any, Optional
 import argparse
 import yaml
-from .ct import run_ct
+from .clst import run_clst
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--config", "-c", type=str, default="examples/example_resnet_classifier.yaml", help="Path to the yaml config file.")
@@ -21,8 +21,8 @@ def read_config(args: argparse.Namespace) -> dict[str, Any]:
 def _training_function(config: dict[str, Any]) -> None:
     stage = config.get("stage")
 
-    if stage == "ct":
-        run_ct(**config)
+    if stage == "clst":
+        run_clst(**config)
     else:
         raise ValueError(f"Unknown task: {stage}.")
 

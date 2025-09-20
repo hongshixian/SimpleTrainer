@@ -9,7 +9,7 @@ import pretrained_model
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
-def run_ct(
+def run_clst(
     experiment_name: str,
     model_args: dict,
     train_args: dict,
