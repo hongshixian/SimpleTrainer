@@ -8,7 +8,7 @@ SimpleTrainer 是一个通用的深度学习模型训练框架，支持多种模
 - **多任务训练**：支持图像分类、文本分类、音频分类等任务
 - **灵活配置**：通过 YAML 配置文件管理训练参数
 - **模块化设计**：清晰的代码结构，易于扩展和维护
-- **多种数据源支持**：支持 Hugging Face Hub 数据集和本地 JSONL 格式数据集
+- **多种数据源支持**：支持 Hugging Face Hub 数据集和本地 JSONL 格式数据集（包括图像、文本和音频数据）
 
 ## 项目结构
 
@@ -24,6 +24,7 @@ SimpleTrainer/
 ├── train/                # 训练流程实现
 │   └── clst/             # 分类器训练流程
 ├── utils/                # 工具函数
+├── debug_train.py        # 调试训练脚本
 ├── train.py              # 训练入口文件
 └── requirements.txt      # 项目依赖
 ```
@@ -44,6 +45,12 @@ pip install -r requirements.txt
 2. **启动训练**：
    ```bash
    python train.py --config path/to/your/config.yaml
+   ```
+
+3. **快速调试训练**：
+   项目提供了 `debug_train.py` 脚本，可以使用默认的 ResNet 配置快速开始训练：
+   ```bash
+   python debug_train.py
    ```
 
 ## 可视化训练进度
@@ -157,10 +164,10 @@ train_args:
 
 ## 支持的模型
 
-- ResNet 图像分类器
-- ViT 图像分类器
-- Wav2Vec2 音频分类器
-- BERT 文本分类器
+- **ResNet 图像分类器**：基于ResNet架构的图像分类模型，适用于各种图像分类任务
+- **ViT 图像分类器**：基于Vision Transformer架构的图像分类模型，支持加载预训练的ViT模型
+- **Wav2Vec2 音频分类器**：基于Wav2Vec2架构的音频分类模型，适用于语音命令识别等音频分类任务
+- **BERT 文本分类器**：基于BERT架构的文本分类模型，支持各种文本分类任务
 
 ## 数据集格式
 
@@ -182,6 +189,12 @@ SimpleTrainer 支持两种数据集格式：
 ```json
 {"image_path": "path/to/image1.jpg", "label": 0}
 {"image_path": "path/to/image2.jpg", "label": 1}
+```
+
+#### 音频分类数据格式
+```json
+{"audio_path": "path/to/audio1.wav", "label": 0}
+{"audio_path": "path/to/audio2.wav", "label": 1}
 ```
 
 ## BERT 文本分类器使用说明
