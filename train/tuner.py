@@ -4,13 +4,6 @@ import argparse
 import yaml
 from .clst import run_clst
 
-parser = argparse.ArgumentParser()
-parser.add_argument("--config", "-c", type=str, default="examples/example_vit_classifier.yaml", help="Path to the yaml config file.")
-
-def get_args() -> argparse.Namespace:
-    args = parser.parse_args()
-    return args
-
 
 def read_config(args: argparse.Namespace) -> dict[str, Any]:
     with open(args.config, "r", encoding="utf-8") as f:
@@ -27,8 +20,7 @@ def _training_function(config: dict[str, Any]) -> None:
         raise ValueError(f"Unknown task: {stage}.")
 
 
-def run_exp() -> None:
-    args = get_args()
+def run_exp(args: argparse.Namespace) -> None:
     config = read_config(args)
     _training_function(config)
     

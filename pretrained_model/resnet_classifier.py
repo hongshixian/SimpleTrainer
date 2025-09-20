@@ -3,7 +3,7 @@ import torch.nn as nn
 from transformers import (
     PretrainedConfig,
     AutoConfig,
-    AutoModelForImageClassification
+    AutoModel
 )
 from transformers.modeling_outputs import ImageClassifierOutput
 from typing import Optional, Union, Dict, Any
@@ -213,4 +213,4 @@ class ResNetForImageClassification(ImageClassifierBase):
 
 
 AutoConfig.register("resnet_classifier", ResNetClassifierConfig)
-AutoModelForImageClassification.register(ResNetClassifierConfig, ResNetForImageClassification)
+AutoModel.register(ResNetClassifierConfig, ResNetForImageClassification)
