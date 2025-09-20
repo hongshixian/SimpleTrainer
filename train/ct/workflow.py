@@ -4,6 +4,7 @@ from transformers import Trainer, TrainingArguments
 from transformers import AutoModelForImageClassification, AutoConfig
 from dataset import get_dataset
 from utils.metric_utils import compute_metrics
+import pretrained_model
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -26,7 +27,7 @@ def run_ct(
     dataset_module = get_dataset(dataset_args)  # dataset_module = {'train_dataset': datasets.Dataset, 'eval_dataset': datasets.Dataset}
     
     # 
-    model_config = AutoConfig.from_model(**model_args)
+    model_config = AutoConfig.for_model(**model_args)
     model = AutoModelForImageClassification.from_config(model_config)
     model.to(device)
     
@@ -48,6 +49,7 @@ def run_ct(
         output_dir=ckpt_save_dir,
         logging_dir=logs_dir,
         report_to="tensorboard",
+        remove_unused_columns=False,
         **train_args
     )
     #

@@ -6,18 +6,18 @@ experiment_name: 0919_debug_train_resnet
 model_args:
   model_type: resnet_classifier
   id2label:
-    0: "cat"
-    1: "dog"
-    2: "bird"
+    0: "angular_leaf_spot"
+    1: "bean_rust"
+    2: "healthy"
   label2id:
-    "cat": 0
-    "dog": 1
-    "bird": 2
+    "angular_leaf_spot": 0
+    "bean_rust": 1
+    "healthy": 2
 
 ### dataset
 # 使用Hugging Face Hub数据集的配置示例
 dataset_args:
-  hf_dataset_name: "AI-Lab-Makerere/beans"
+  hf_dataset_name: "./data_cache/beans"
   hf_dataset_config: null
   train_split: "train"
   eval_split: "validation"
@@ -38,6 +38,6 @@ train_args:
   per_device_eval_batch_size: 8
   warmup_steps: 500
   weight_decay: 0.01
-  evaluation_strategy: steps
+  eval_strategy: steps
   eval_steps: 500
   load_best_model_at_end: true

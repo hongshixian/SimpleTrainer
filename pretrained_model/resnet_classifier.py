@@ -2,7 +2,9 @@ import torch
 import torch.nn as nn
 from transformers import (
     PreTrainedModel, 
-    PretrainedConfig
+    PretrainedConfig,
+    AutoConfig,
+    AutoModelForImageClassification
 )
 from transformers.modeling_outputs import ImageClassifierOutput
 from typing import Optional, Union, Dict, Any
@@ -16,8 +18,8 @@ class ResNetClassifierConfig(PretrainedConfig):
     
     def __init__(
         self,
-        id2label: dict,
-        label2id: dict,
+        id2label: Optional[dict] = None,
+        label2id: Optional[dict] = None,
         resnet_type: str = "resnet18",
         num_classes: int = 1000,
         classifier_dropout: float = 0.1,
@@ -27,8 +29,8 @@ class ResNetClassifierConfig(PretrainedConfig):
         super().__init__(**kwargs)
         
         # 分类相关配置
-        self.id2label = id2label
-        self.label2id = label2id
+        self.id2label = id2label if id2label is not None else {}
+        self.label2id = label2id if label2id is not None else {}
         self.num_classes = num_classes
         self.classifier_dropout = classifier_dropout
         self.problem_type = problem_type
@@ -115,25 +117,48 @@ class ResNetForImageClassification(PreTrainedModel):
         :param is_train: 是否为训练模式
         :return: 预处理后的数据字典
         """
+        # 创建一个新的字典来存储预处理后的数据
+        processed_examples = {}
+        
         # 获取变换方式
         transform = self.train_transform if is_train else self.eval_transform
         
         # 处理单个图像或批量图像
-        if isinstance(examples['image'], list):
+        # 确保我们使用正确的图像键
+        if 'image' in examples:
+            image_data = examples['image']
+        elif 'images' in examples:
+            image_data = examples['images']
+        else:
+            raise KeyError("No image data found in examples. Available keys: {}".format(list(examples.keys())))
+        
+        if isinstance(image_data, list):
             # 批量处理
-            images = [transform(image.convert('RGB')) for image in examples['image']]
+            images = [transform(image.convert('RGB')) for image in image_data]
         else:
             # 单个图像处理
-            images = transform(examples['image'].convert('RGB'))
+            images = transform(image_data.convert('RGB'))
             
         # 更新数据字典
-        examples['pixel_values'] = images
+        processed_examples['pixel_values'] = images
 
         # 将标签映射为ID
-        if 'label' in examples:
-            examples['label'] = [self.config.label2id[label] for label in examples['label']]
+        if 'labels' in examples:
+            # 处理单个标签或批量标签
+            if isinstance(examples['labels'], list):
+                processed_examples['labels'] = [self.config.label2id[label] if isinstance(label, str) else label for label in examples['labels']]
+            else:
+                processed_examples['labels'] = self.config.label2id[examples['labels']] if isinstance(examples['labels'], str) else examples['labels']
+            # 重命名为label以匹配模型期望的输入
+            processed_examples['label'] = processed_examples['labels']
+        elif 'label' in examples:
+            # 处理单个标签或批量标签
+            if isinstance(examples['label'], list):
+                processed_examples['label'] = [self.config.label2id[label] if isinstance(label, str) else label for label in examples['label']]
+            else:
+                processed_examples['label'] = self.config.label2id[examples['label']] if isinstance(examples['label'], str) else examples['label']
         
-        return examples
+        return processed_examples
 
     def forward(
         self,
@@ -152,22 +177,22 @@ class ResNetForImageClassification(PreTrainedModel):
         if labels is not None:
             # 根据问题类型计算损失
             if self.config.problem_type is None:
-                if self.num_labels == 1:
+                if self.config.num_classes == 1:
                     self.config.problem_type = "regression"
-                elif self.num_labels > 1:
+                elif self.config.num_classes > 1:
                     self.config.problem_type = "single_label_classification"
                 else:
                     self.config.problem_type = "multi_label_classification"
             
             if self.config.problem_type == "regression":
                 loss_fct = nn.MSELoss()
-                if self.num_labels == 1:
+                if self.config.num_classes == 1:
                     loss = loss_fct(logits.squeeze(), labels.squeeze())
                 else:
                     loss = loss_fct(logits, labels)
             elif self.config.problem_type == "single_label_classification":
                 loss_fct = nn.CrossEntropyLoss()
-                loss = loss_fct(logits.view(-1, self.num_labels), labels.view(-1))
+                loss = loss_fct(logits.view(-1, self.config.num_classes), labels.view(-1))
             elif self.config.problem_type == "multi_label_classification":
                 loss_fct = nn.BCEWithLogitsLoss()
                 loss = loss_fct(logits, labels)
@@ -190,3 +215,7 @@ class ResNetForImageClassification(PreTrainedModel):
         """解冻ResNet的参数"""
         for param in self.resnet.parameters():
             param.requires_grad = True
+
+
+AutoConfig.register("resnet_classifier", ResNetClassifierConfig)
+AutoModelForImageClassification.register(ResNetClassifierConfig, ResNetForImageClassification)
