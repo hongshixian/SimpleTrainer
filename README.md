@@ -92,6 +92,7 @@ train_args:
 
 - ResNet 分类器
 - ViT 分类器
+- Wav2Vec2 音频分类器
 
 ## 许可证
 

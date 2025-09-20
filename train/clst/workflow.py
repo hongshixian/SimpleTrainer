@@ -1,7 +1,7 @@
 import os
 import torch
 from transformers import Trainer, TrainingArguments
-from transformers import AutoModelForImageClassification, AutoConfig
+from transformers import AutoModel, AutoConfig
 from dataset import get_dataset
 from utils.metric_utils import compute_metrics
 import pretrained_model
@@ -28,7 +28,7 @@ def run_clst(
     
     # 
     model_config = AutoConfig.for_model(**model_args)
-    model = AutoModelForImageClassification.from_config(model_config)
+    model = AutoModel.from_config(model_config)
     model.to(device)
     
     # 定义训练和验证时的变换函数

@@ -33,5 +33,5 @@ train_args:
   warmup_steps: 500
   weight_decay: 0.01
   eval_strategy: steps
-  eval_steps: 500
+  eval_steps: 20
   load_best_model_at_end: true

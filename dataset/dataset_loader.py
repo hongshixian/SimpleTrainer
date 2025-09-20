@@ -4,6 +4,7 @@ from datasets import Dataset as HFDataset, load_dataset
 from typing import Dict, Any, Optional, Union
 from dataset.images.image_dataset import load_image_data_from_jsonl
 from dataset.texts.text_dataset import load_text_data_from_jsonl
+from dataset.audios.audio_dataset import load_audio_data_from_jsonl
 from torchvision import transforms
 from PIL import Image
 
@@ -25,6 +26,15 @@ def load_text_dataset_from_jsonl(jsonl_path: str) -> HFDataset:
     :return: HFDataset实例
     """
     return load_text_data_from_jsonl(jsonl_path)
+
+
+def load_audio_dataset_from_jsonl(jsonl_path: str) -> HFDataset:
+    """
+    从jsonl文件加载音频数据集
+    :param jsonl_path: jsonl文件路径
+    :return: HFDataset实例
+    """
+    return load_audio_data_from_jsonl(jsonl_path)
 
 
 def get_dataset(dataset_args: dict) -> dict:
@@ -65,6 +75,8 @@ def get_dataset(dataset_args: dict) -> dict:
             train_dataset = load_image_dataset_from_jsonl(train_path, transform)
         elif dataset_type == 'text':
             train_dataset = load_text_dataset_from_jsonl(train_path)
+        elif dataset_type == 'audio':
+            train_dataset = load_audio_dataset_from_jsonl(train_path)
     
     # 加载验证数据集
     eval_dataset = None
@@ -73,6 +85,8 @@ def get_dataset(dataset_args: dict) -> dict:
             eval_dataset = load_image_dataset_from_jsonl(val_path, transform)
         elif dataset_type == 'text':
             eval_dataset = load_text_dataset_from_jsonl(val_path)
+        elif dataset_type == 'audio':
+            eval_dataset = load_audio_dataset_from_jsonl(val_path)
     
     return {
         'train_dataset': train_dataset,
@@ -95,15 +109,15 @@ def get_hf_dataset(dataset_args: dict) -> dict:
     eval_split = dataset_args.get('eval_split', 'validation')
     
     # 加载训练数据集
-    train_dataset = load_dataset(hf_dataset_name, name=hf_dataset_config, split=train_split)
+    train_dataset = load_dataset(hf_dataset_name, name=hf_dataset_config, split=train_split, trust_remote_code=True)
     
     # 加载验证数据集
     try:
-        eval_dataset = load_dataset(hf_dataset_name, name=hf_dataset_config, split=eval_split)
+        eval_dataset = load_dataset(hf_dataset_name, name=hf_dataset_config, split=eval_split, trust_remote_code=True)
     except:
         # 如果没有验证集，则使用测试集
         try:
-            eval_dataset = load_dataset(hf_dataset_name, name=hf_dataset_config, split='test')
+            eval_dataset = load_dataset(hf_dataset_name, name=hf_dataset_config, split='test', trust_remote_code=True)
         except:
             # 如果也没有测试集，则从训练集中划分一部分作为验证集
             eval_dataset = None
