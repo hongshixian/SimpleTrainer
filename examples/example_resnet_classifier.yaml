@@ -17,7 +17,7 @@ model_args:
 ### dataset
 # 使用Hugging Face Hub数据集的配置示例
 dataset_args:
-  hf_dataset_name: "./data_cache/beans"
+  hf_dataset_name: "AI-Lab-Makerere/beans"
   hf_dataset_config: null
   train_split: "train"
   eval_split: "validation"
