@@ -4,11 +4,11 @@ SimpleTrainer 是一个通用的深度学习模型训练框架，支持多种模
 
 ## 功能特点
 
-- **多模型支持**：支持 ResNet、CLIP-ViT 等多种模型架构
-- **多任务训练**：支持图像分类等任务
+- **多模型支持**：支持 ResNet、ViT、Wav2Vec2、BERT 等多种模型架构
+- **多任务训练**：支持图像分类、文本分类、音频分类等任务
 - **灵活配置**：通过 YAML 配置文件管理训练参数
 - **模块化设计**：清晰的代码结构，易于扩展和维护
-- **对比训练**：支持对比学习训练策略
+- **多种数据源支持**：支持 Hugging Face Hub 数据集和本地 JSONL 格式数据集
 
 ## 项目结构
 
@@ -18,9 +18,9 @@ SimpleTrainer/
 │   ├── images/           # 图像数据集处理
 │   ├── texts/            # 文本数据集处理
 │   └── audios/           # 音频数据集处理
-├── examples/             # 配置文件示例
-├── network/              # 网络模型定义
-├── pretrained_model/     # 预训练模型定义
+├── examples/             # 配置文件示例和示例数据
+├── network/              # 网络模型定义（如ResNet等）
+├── pretrained_model/     # 预训练模型定义和封装
 ├── train/                # 训练流程实现
 │   └── clst/             # 分类器训练流程
 ├── utils/                # 工具函数
@@ -66,26 +66,93 @@ tensorboard --logdir logs
 - `dataset_args`: 数据集配置
 - `train_args`: 训练参数配置
 
-示例配置文件：
+### 使用 Hugging Face 数据集的配置示例
+
 ```yaml
+### pipeline
 stage: clst
-experiment_name: example_experiment
+experiment_name: example_bert_classifier
 
+### model
 model_args:
-  model_type: resnet_classifier
+  model_type: bert_classifier
   id2label:
-    0: "class_0"
-    1: "class_1"
+    0: "negative"
+    1: "positive"
+  label2id:
+    "negative": 0
+    "positive": 1
+  model_name: bert-base-uncased
+  num_classes: 2
+  classifier_dropout: 0.1
 
+### dataset
 dataset_args:
-  hf_dataset_name: "path/to/dataset"
+  hf_dataset_name: "imdb"
+  hf_dataset_config: null
   train_split: "train"
-  eval_split: "validation"
+  eval_split: "test"
 
+### train
 train_args:
+  logging_steps: 10
+  save_steps: 500
+  save_total_limit: 1
+  num_train_epochs: 1
+  per_device_train_batch_size: 8
+  per_device_eval_batch_size: 8
+  warmup_steps: 500
+  weight_decay: 0.01
+  eval_strategy: steps
+  eval_steps: 500
+  load_best_model_at_end: true
+```
+
+### 使用本地 JSONL 数据集的配置示例
+
+```yaml
+### pipeline
+stage: clst
+experiment_name: example_bert_classifier_local
+
+### model
+model_args:
+  model_type: bert_classifier
+  id2label:
+    0: "negative"
+    1: "positive"
+  label2id:
+    "negative": 0
+    "positive": 1
+  model_name: bert-base-uncased
+  num_classes: 2
+  classifier_dropout: 0.1
+
+### dataset
+dataset_args:
+  dataset_type: text
+  train_jsonline_path: examples/sample_text_data.jsonl
+  val_jsonline_path: examples/sample_text_data.jsonl
+  label2id:
+    "negative": 0
+    "positive": 1
+  id2label:
+    0: "negative"
+    1: "positive"
+
+### train
+train_args:
+  logging_steps: 10
+  save_steps: 500
+  save_total_limit: 1
   num_train_epochs: 5
   per_device_train_batch_size: 8
   per_device_eval_batch_size: 8
+  warmup_steps: 500
+  weight_decay: 0.01
+  eval_strategy: steps
+  eval_steps: 500
+  load_best_model_at_end: true
 ```
 
 ## 支持的模型
@@ -95,32 +162,50 @@ train_args:
 - Wav2Vec2 音频分类器
 - BERT 文本分类器
 
+## 数据集格式
+
+SimpleTrainer 支持两种数据集格式：
+
+### 1. Hugging Face Hub 数据集
+直接使用 Hugging Face Hub 上的数据集，通过指定 `hf_dataset_name` 参数。
+
+### 2. 本地 JSONL 格式数据集
+使用本地 JSONL 格式的数据集，每行一个 JSON 对象，包含特征和标签。
+
+#### 文本分类数据格式
+```json
+{"text": "This movie is absolutely fantastic!", "label": "positive"}
+{"text": "The worst film I've ever seen.", "label": "negative"}
+```
+
+#### 图像分类数据格式
+```json
+{"image_path": "path/to/image1.jpg", "label": 0}
+{"image_path": "path/to/image2.jpg", "label": 1}
+```
+
 ## BERT 文本分类器使用说明
 
 ### 训练
 
-要使用BERT文本分类器进行训练，可以按照以下步骤操作：
+要使用 BERT 文本分类器进行训练，可以按照以下步骤操作：
 
-1. 准备数据集：创建一个jsonl格式的文件，每行包含一个文本样本和对应的标签，例如：
+1. 准备数据集：创建一个 jsonl 格式的文件，每行包含一个文本样本和对应的标签，例如：
    ```json
    {"text": "This movie is absolutely fantastic!", "label": "positive"}
    {"text": "The worst film I've ever seen.", "label": "negative"}
    ```
 
-2. 创建配置文件：参考 `examples/example_bert_classifier_local.yaml` 文件创建自己的配置文件。
+2. 创建配置文件：参考 `examples/example_bert_classifier.yaml` 或 `examples/example_bert_classifier_local.yaml` 文件创建自己的配置文件。
 
 3. 运行训练命令：
    ```bash
    python train.py --config your_config_file.yaml
    ```
 
-### 推理
-
-训练完成后，可以使用类似 `inference_bert.py` 的脚本对新文本进行情感分析或其他文本分类任务。
-
 ## 许可证
 
-本项目采用 [许可证信息] 授权。详细信息请参见 [LICENSE](LICENSE) 文件。
+本项目采用 MIT 许可证授权。详细信息请参见 [LICENSE](LICENSE) 文件。
 
 ## 贡献
 

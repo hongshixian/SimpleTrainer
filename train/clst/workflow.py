@@ -26,17 +26,9 @@ def run_clst(
     # 
     dataset_module = get_dataset(dataset_args)  # dataset_module = {'train_dataset': datasets.Dataset, 'eval_dataset': datasets.Dataset}
     
-    #
-    model_type = model_args.get('model_type')
-    if model_type == 'bert_classifier':
-        # 对于BERT分类器，直接使用BertClassifierConfig
-        from pretrained_model.bert_classifier import BertClassifierConfig
-        model_config = BertClassifierConfig(**{k: v for k, v in model_args.items() if k != 'model_type'})
-        model = AutoModel.from_config(model_config)
-    else:
-        # 其他模型使用原有的方式
-        model_config = AutoConfig.for_model(**model_args)
-        model = AutoModel.from_config(model_config)
+    # 其他模型使用原有的方式
+    model_config = AutoConfig.for_model(**model_args)
+    model = AutoModel.from_config(model_config)
     model.to(device)
     
     # 定义训练和验证时的变换函数

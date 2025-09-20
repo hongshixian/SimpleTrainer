@@ -3,10 +3,10 @@ import torch.nn as nn
 from transformers import (
     PreTrainedModel, 
     PretrainedConfig,
-    AutoConfig,
     Wav2Vec2Model,
     Wav2Vec2Processor
 )
+from transformers import AutoConfig, AutoModel
 from transformers.modeling_outputs import SequenceClassifierOutput
 from typing import Optional, Union, Dict, Any
 import librosa
@@ -240,5 +240,4 @@ class Wav2Vec2ForAudioClassification(PreTrainedModel):
 
 # 注册模型
 AutoConfig.register("wav2vec2_classifier", Wav2Vec2ClassifierConfig)
-from transformers import AutoModel
 AutoModel.register(Wav2Vec2ClassifierConfig, Wav2Vec2ForAudioClassification)
