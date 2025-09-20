@@ -187,14 +187,14 @@ SimpleTrainer 支持两种数据集格式：
 
 #### 图像分类数据格式
 ```json
-{"image_path": "path/to/image1.jpg", "label": 0}
-{"image_path": "path/to/image2.jpg", "label": 1}
+{"image_path": "path/to/image1.jpg", "label": "cat"}
+{"image_path": "path/to/image2.jpg", "label": "dog"}
 ```
 
 #### 音频分类数据格式
 ```json
-{"audio_path": "path/to/audio1.wav", "label": 0}
-{"audio_path": "path/to/audio2.wav", "label": 1}
+{"audio_path": "path/to/audio1.wav", "label": "positive"}
+{"audio_path": "path/to/audio2.wav", "label": "negative"}
 ```
 
 ## BERT 文本分类器使用说明
