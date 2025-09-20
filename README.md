@@ -46,6 +46,16 @@ pip install -r requirements.txt
    python train.py --config path/to/your/config.yaml
    ```
 
+## 可视化训练进度
+
+在训练过程中，SimpleTrainer 会自动记录训练指标到 `logs` 目录中。您可以使用 TensorBoard 来可视化这些指标：
+
+```bash
+tensorboard --logdir logs
+```
+
+然后在浏览器中打开 http://localhost:6006 来查看训练进度和指标。
+
 ## 配置文件说明
 
 配置文件使用 YAML 格式，主要包含以下几个部分：
