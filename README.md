@@ -1,6 +1,6 @@
-# SimpleTrainer
+# SimpleTrainer（简易丹炉）
 
-SimpleTrainer 是一个通用的深度学习模型训练框架，支持多种模型架构和数据集类型。该项目基于 Hugging Face Transformers 库构建，提供了简洁的训练接口和灵活的配置选项。
+SimpleTrainer 是一个简易的分类器训练框架，支持多种模型架构和数据集类型。该项目基于 Hugging Face Transformers 库构建，提供了简洁的训练接口和灵活的配置选项。用于快速训练和评估一个自定义的分类器模型。
 
 ## 功能特点
 
