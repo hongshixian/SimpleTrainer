@@ -7,6 +7,7 @@ from dataset.texts.text_dataset import load_text_data_from_jsonl
 from dataset.audios.audio_dataset import load_audio_data_from_jsonl
 from torchvision import transforms
 from PIL import Image
+from .custom_datasets import CUSTOM_DATASET_DICT
 
 
 def load_image_dataset_from_jsonl(jsonl_path: str, transform=None) -> HFDataset:
@@ -37,17 +38,12 @@ def load_audio_dataset_from_jsonl(jsonl_path: str) -> HFDataset:
     return load_audio_data_from_jsonl(jsonl_path)
 
 
-def get_dataset(dataset_args: dict) -> dict:
+def get_jsonl_dataset(dataset_args: dict) -> dict:
     """
     根据配置获取数据集
     :param dataset_args: 数据集配置参数
-    :return: 包含train_dataset和eval_dataset的字典，值为Hugging Face Dataset类型
+    :return: 包含train_dataset和eval_dataset的字典
     """
-    # 检查是否指定了Hugging Face数据集名称
-    hf_dataset_name = dataset_args.get('hf_dataset_name')
-    if hf_dataset_name:
-        return get_hf_dataset(dataset_args)
-    
     # 获取数据集类型
     dataset_type = dataset_args.get('dataset_type', 'image')
     
@@ -126,3 +122,58 @@ def get_hf_dataset(dataset_args: dict) -> dict:
         'train_dataset': train_dataset,
         'eval_dataset': eval_dataset
     }
+
+
+def get_custom_dataset(dataset_args: dict) -> dict:
+    """
+    根据配置获取自定义数据集
+    :param dataset_args: 数据集配置参数
+    :return: 包含train_dataset和eval_dataset的字典，值为Hugging Face Dataset类型
+    """
+    # 获取自定义数据集名称
+    custom_dataset_name = dataset_args.get('custom_dataset_name')
+    custom_dataset_args = dataset_args.get('custom_dataset_args')
+
+    # 检查自定义数据集是否存在
+    if custom_dataset_name not in CUSTOM_DATASET_DICT:
+        raise ValueError(f"custom_dataset_name {custom_dataset_name} not found in CUSTOM_DATASET_DICT")
+    custom_dataset_cls = CUSTOM_DATASET_DICT[custom_dataset_name]
+
+    train_split = dataset_args.get('train_split')
+    eval_split = dataset_args.get('eval_split')
+
+    # 加载自定义数据集
+    train_dataset = custom_dataset_cls(split=train_split, **custom_dataset_args)
+    if eval_split:
+        eval_dataset = custom_dataset_cls(split=eval_split, **custom_dataset_args)
+    else:
+        eval_dataset = None
+    
+    return {
+        'train_dataset': train_dataset,
+        'eval_dataset': eval_dataset
+    }
+
+
+def get_dataset(dataset_args: dict) -> dict:
+    """
+    根据配置获取数据集
+    :param dataset_args: 数据集配置参数
+    :return: 包含train_dataset和eval_dataset的字典，值为Hugging Face Dataset类型
+    """
+    # 检查是否指定了Hugging Face数据集名称
+    hf_dataset_name = dataset_args.get('hf_dataset_name')
+    if hf_dataset_name:
+        return get_hf_dataset(dataset_args)
+    
+    # 加载custom数据集
+    custom_dataset_name = dataset_args.get('custom_dataset_name')
+    if custom_dataset_name:
+        return get_custom_dataset(dataset_args)
+
+    # 获取jsonl数据类型
+    jsonl_dataset_type = dataset_args.get('dataset_type')
+    if jsonl_dataset_type:
+        return get_jsonl_dataset(dataset_args)
+    
+    raise KeyError(f"dataset args not avalible type : {dataset_args}")

@@ -3,6 +3,7 @@ import numpy as np
 from sklearn.metrics import accuracy_score, precision_recall_fscore_support, roc_curve
 from scipy.optimize import brentq
 from scipy.interpolate import interp1d
+from scipy.special import softmax
 
 
 def classification_metrics(logits, labels):
@@ -73,6 +74,7 @@ def compute_metrics(eval_pred):
     :return: 合并后的指标字典
     """
     logits, labels = eval_pred
+    logits = softmax(logits, axis=-1)
     
     # 转换为torch tensor如果需要的话
     if not isinstance(logits, torch.Tensor):
