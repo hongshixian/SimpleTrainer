@@ -5,6 +5,7 @@ from transformers import AutoModel, AutoConfig
 from dataset import get_dataset
 from utils.metric_utils import compute_metrics
 import pretrained_model
+from .wrapper import get_wrapper
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -26,10 +27,8 @@ def run_clsft(
     # 
     dataset_module = get_dataset(dataset_args)  # dataset_module = {'train_dataset': datasets.Dataset, 'eval_dataset': datasets.Dataset}
     
-    # 其他模型使用原有的方式
-    model_config = AutoConfig.for_model(**model_args)
-    model = AutoModel.from_config(model_config)
-    model.to(device)
+    # 加载模型
+    model = get_wrapper(model_args, device)
     
     # 定义训练和验证时的变换函数
     def transform_train(examples):
@@ -54,7 +53,7 @@ def run_clsft(
     )
     #
     trainer = Trainer(
-        model=model,
+        model=model.model,
         args=training_args,
         compute_metrics=compute_metrics,
         **dataset_module

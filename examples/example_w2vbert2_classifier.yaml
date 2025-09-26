@@ -4,8 +4,8 @@ experiment_name: 0926_debug_train_w2vbert2
 
 ### model
 model_args:
-  finetune_task: "audio-classification"
-  pretrained_model_name_or_path: "facebook/w2v-bert-2.0"
+  finetuning_task: "audio-classification"
+  pretrained_model_name_or_path: "facebook/wav2vec2-base"
   id2label:
     0: "bonafide"
     1: "spoof"

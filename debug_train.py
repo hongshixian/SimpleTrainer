@@ -11,7 +11,10 @@ from train.tuner import run_exp
 
 def get_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--config", "-c", type=str, default="examples/example_wav2vec2_classifier.yaml", help="Path to the yaml config file.")
+    parser.add_argument(
+        "--config", "-c", type=str, 
+        default="examples/example_w2vbert2_classifier.yaml", 
+        help="Path to the yaml config file.")
     args = parser.parse_args()
     return args
 
