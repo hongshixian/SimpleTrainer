@@ -2,7 +2,6 @@ import os
 from typing import TYPE_CHECKING, Any, Optional
 import argparse
 import yaml
-from .clst import run_clst
 
 
 def read_config(args: argparse.Namespace) -> dict[str, Any]:
@@ -15,7 +14,11 @@ def _training_function(config: dict[str, Any]) -> None:
     stage = config.get("stage")
 
     if stage == "clst":
+        from .clst import run_clst
         run_clst(**config)
+    elif stage == "clsft":
+        from .clsft import run_clsft
+        run_clsft(**config)
     else:
         raise ValueError(f"Unknown task: {stage}.")
 
