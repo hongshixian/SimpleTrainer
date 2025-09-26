@@ -162,14 +162,13 @@ class Wav2Vec2ForAudioClassification(AudioClassifierBase):
 
         # 处理标签
         if 'labels' in examples:
-            processed_examples['labels'] = examples['labels']
-            processed_examples['label'] = examples['labels']
+            processed_examples['labels'] = self.config.label2id[examples['labels']]
+            processed_examples['label'] = self.config.label2id[examples['labels']]
         elif 'label' in examples:
-            processed_examples['label'] = examples['label']
-        elif 'intent_class' in examples:
-            # 处理MInDS-14数据集的intent_class标签
-            processed_examples['labels'] = examples['intent_class']
-            processed_examples['label'] = examples['intent_class']
+            processed_examples['label'] = self.config.label2id[examples['label']]
+        else:
+            processed_examples['label'] = None
+            raise ValueError("No label found in examples. Available keys: {}".format(list(examples.keys())))
         
         return processed_examples
 

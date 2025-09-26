@@ -1,61 +1,38 @@
 ### pipeline
 stage: clst
-experiment_name: 0919_debug_train_wav2vec2
+experiment_name: 0926_debug_train_wav2vec2
 
 ### model
 model_args:
   model_type: wav2vec2_classifier
-  # MInDS-14 数据集的标签映射
   id2label:
-    0: "credit_card"
-    1: "banking"
-    2: "mortgage"
-    3: "debit_card"
-    4: "insurance"
-    5: "loan"
-    6: "retirement"
-    7: "investment"
-    8: "tax"
-    9: "customer_service"
-    10: "transfer"
-    11: "savings"
-    12: "wire_transfer"
-    13: "payroll"
+    0: "bonafide"
+    1: "spoof"
   label2id:
-    "credit_card": 0
-    "banking": 1
-    "mortgage": 2
-    "debit_card": 3
-    "insurance": 4
-    "loan": 5
-    "retirement": 6
-    "investment": 7
-    "tax": 8
-    "customer_service": 9
-    "transfer": 10
-    "savings": 11
-    "wire_transfer": 12
-    "payroll": 13
+    "bonafide": 0
+    "spoof": 1
   model_name: facebook/wav2vec2-base
-  num_labels: 14
+  num_labels: 2
 
 ### dataset
-# 使用Hugging Face Hub数据集的配置示例
 dataset_args:
-  hf_dataset_name: "PolyAI/minds14"
-  hf_dataset_config: "en-US"
+  custom_dataset_name: "ASVSpoof2019LA"
+  custom_dataset_config: null
   train_split: "train"
-  eval_split: null
+  eval_split: "dev"
 
 ### train
 train_args:
   logging_steps: 10
   save_steps: 500
   save_total_limit: 1
-  num_train_epochs: 5
+  num_train_epochs: 1
   per_device_train_batch_size: 8
+  gradient_accumulation_steps: 1
   per_device_eval_batch_size: 8
-  warmup_steps: 500
+  warmup_ratio: 0.1
+  lr_scheduler_type: "cosine"
   weight_decay: 0.01
-  eval_strategy: "no"
-  load_best_model_at_end: false
+  eval_strategy: "steps"
+  eval_steps: 500
+  load_best_model_at_end: true

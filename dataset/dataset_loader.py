@@ -132,7 +132,7 @@ def get_custom_dataset(dataset_args: dict) -> dict:
     """
     # 获取自定义数据集名称
     custom_dataset_name = dataset_args.get('custom_dataset_name')
-    custom_dataset_args = dataset_args.get('custom_dataset_args')
+    custom_dataset_args = dataset_args.get('custom_dataset_args', {})
 
     # 检查自定义数据集是否存在
     if custom_dataset_name not in CUSTOM_DATASET_DICT:
