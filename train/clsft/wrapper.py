@@ -4,8 +4,9 @@ from transformers import (
     PretrainedConfig,
     PreTrainedModel,
 )
-from transformers import AutoConfig, AutoModelForAudioClassification, AutoFeatureExtractor
-from transformers import AutoTokenizer, AutoModelForSequenceClassification
+from transformers import AutoModelForAudioClassification, AutoFeatureExtractor
+from transformers import AutoModelForSequenceClassification, AutoTokenizer
+from transformers import AutoModelForImageClassification, AutoImageProcessor
 from transformers.modeling_outputs import SequenceClassifierOutput
 from typing import Optional, Union, Dict, Any
 import numpy as np
@@ -65,24 +66,7 @@ class WrapperForImageClassification:
         if finetuning_task in ["image-classification"]:
             # 对于图像分类，我们可能需要使用特定的特征提取器
             # 这里我们假设使用与ViT模型兼容的预处理
-            self.processor = None  # 图像处理将在预处理函数中完成
-            # 定义训练和验证时的预处理变换
-            self.train_transform = transforms.Compose([
-                transforms.RandomResizedCrop(224),
-                transforms.RandomHorizontalFlip(),
-                transforms.ToTensor(),
-                transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
-            ])
-            
-            self.eval_transform = transforms.Compose([
-                transforms.Resize(256),
-                transforms.CenterCrop(224),
-                transforms.ToTensor(),
-                transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
-            ])
-            
-            # 加载模型
-            from transformers import AutoModelForImageClassification
+            self.processor = AutoImageProcessor.from_pretrained(**model_args)
             self.model = AutoModelForImageClassification.from_pretrained(**model_args)
             self.model.to(device)
         else:
@@ -90,34 +74,20 @@ class WrapperForImageClassification:
 
     def preprocess(self, examples: Dict[str, Any], is_train: bool = True):
         processed_examples = {}
-        # 获取变换方式
-        transform = self.train_transform if is_train else self.eval_transform
-        
         # 处理图像
         if 'image' in examples:
             image_data = examples['image']
         else:
             raise KeyError("No image data found in examples. Available keys: {}".format(list(examples.keys())))
         
-        # 处理单个图像或批量图像
-        if isinstance(image_data, list):
-            # 批量处理
-            images = [transform(image.convert('RGB')) for image in image_data]
-            processed_examples['pixel_values'] = torch.stack(images)
-        else:
-            # 单个图像处理
-            images = transform(image_data.convert('RGB'))
-            processed_examples['pixel_values'] = images.unsqueeze(0)  # 添加batch维度
-
+        # 处理主要输入
+        model_input_name = self.processor.model_input_names[0]
+        processed_examples[model_input_name] = self.processor(
+            image_data, return_tensors="pt")[model_input_name].squeeze(0)
         # 处理标签
         if "label" in examples:
             label2id = self.model.config.label2id
-            if isinstance(examples["label"], list):
-                processed_examples["labels"] = torch.tensor([label2id[label] if isinstance(label, str) else label for label in examples["label"]], dtype=torch.long)
-            else:
-                label = examples["label"]
-                processed_examples["labels"] = torch.tensor([label2id[label] if isinstance(label, str) else label], dtype=torch.long)
-        
+            processed_examples["labels"] = label2id[examples["label"]]
         return processed_examples
 
     def forward(self, *args, **kwargs):
