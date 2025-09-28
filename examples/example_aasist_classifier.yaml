@@ -1,0 +1,48 @@
+### pipeline
+stage: clst
+experiment_name: 0928_debug_train_aasist
+
+### model
+model_args:
+  model_type: aasist_classifier
+  num_labels: 2
+  d_args: {
+    "architecture": "AASIST",
+    "nb_samp": 64600,
+    "first_conv": 128,
+    "filts": [70, [1, 32], [32, 32], [32, 24], [24, 24]],
+    "gat_dims": [24, 32],
+    "pool_ratios": [0.4, 0.5, 0.7, 0.5],
+    "temperatures": [2.0, 2.0, 100.0, 100.0]
+  }
+  id2label:
+    0: "bonafide"
+    1: "spoof"
+  label2id:
+    "bonafide": 0
+    "spoof": 1
+
+### dataset
+dataset_args:
+  custom_dataset_name: "ASVSpoof2019LA"
+  custom_dataset_config: null
+  train_split: "train"
+  eval_split: "dev"
+
+### train
+train_args:
+  logging_steps: 10
+  save_steps: 500
+  save_total_limit: 1
+  num_train_epochs: 5
+  per_device_train_batch_size: 8
+  gradient_accumulation_steps: 1
+  per_device_eval_batch_size: 8
+  warmup_ratio: 0.1
+  learning_rate: 1.0e-5
+  lr_scheduler_type: "cosine"
+  weight_decay: 1.0e-4
+  eval_strategy: "steps"
+  eval_steps: 500
+  load_best_model_at_end: true
+  # dataloader_num_workers: 4

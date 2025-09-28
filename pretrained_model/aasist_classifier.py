@@ -56,7 +56,7 @@ class AASISTForAudioClassification(AudioClassifierBase):
 
         # 初始化AASIST模型
         d_args = config.d_args
-        self.model = AASISTModel(**d_args)
+        self.model = AASISTModel(d_args)
         
         # 初始化权重
         self.post_init()
