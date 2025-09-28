@@ -3,6 +3,7 @@ from .vit_classifier import ViTClassifierConfig, ViTForImageClassification
 from .wav2vec2_classifier import Wav2Vec2ClassifierConfig, Wav2Vec2ForAudioClassification
 from .bert_classifier import BertClassifierConfig, BertForTextClassification
 from .base_classifier import BasePretrainedClassifier, TextClassifierBase, ImageClassifierBase, AudioClassifierBase
+from .aasist_classifier import AASISTClassifierConfig, AASISTForAudioClassification
 
 __all__ = [
     "ResNetClassifierConfig",
@@ -16,5 +17,7 @@ __all__ = [
     "BasePretrainedClassifier",
     "TextClassifierBase",
     "ImageClassifierBase",
-    "AudioClassifierBase"
+    "AudioClassifierBase",
+    "AASISTClassifierConfig",
+    "AASISTForAudioClassification"
 ]
