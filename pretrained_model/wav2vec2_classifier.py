@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 from transformers import (
+    AutoModelForAudioClassification,
     PretrainedConfig,
     Wav2Vec2Model,
     Wav2Vec2Processor
@@ -21,7 +22,6 @@ class Wav2Vec2ClassifierConfig(PretrainedConfig):
         id2label: Optional[dict] = None,
         label2id: Optional[dict] = None,
         model_name: str = "facebook/wav2vec2-base",
-        num_labels: int = 10,
         classifier_dropout: float = 0.1,
         problem_type: Optional[str] = None,
         sampling_rate: int = 16000,
@@ -32,7 +32,6 @@ class Wav2Vec2ClassifierConfig(PretrainedConfig):
         # 分类相关配置
         self.id2label = id2label if id2label is not None else {}
         self.label2id = label2id if label2id is not None else {}
-        self.num_labels = num_labels
         self.classifier_dropout = classifier_dropout
         self.problem_type = problem_type
         self.model_name = model_name
