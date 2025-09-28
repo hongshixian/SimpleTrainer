@@ -252,8 +252,6 @@ def main():
             raise NotImplementedError("Warning: Dataset does not support set_transform method. Evaluation may not work as expected.")
         
         # 执行评估
-        # 如果使用包装器模型，需要传递model.model而不是model
-        eval_model = model.model if hasattr(model, 'model') else model
         results_df, metrics = evaluate_model(
             eval_model, config, eval_dataset, args.device, args.batch_size
         )
