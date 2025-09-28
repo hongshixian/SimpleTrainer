@@ -8,6 +8,7 @@ from dataset.audios.audio_dataset import load_audio_data_from_jsonl
 from torchvision import transforms
 from PIL import Image
 from .custom_datasets import CUSTOM_DATASET_DICT
+from .hf_datasets import HFDatasetWrapper
 
 
 def load_image_dataset_from_jsonl(jsonl_path: str, transform=None) -> HFDataset:
@@ -105,18 +106,15 @@ def get_hf_dataset(dataset_args: dict) -> dict:
     eval_split = dataset_args.get('eval_split', 'validation')
     
     # 加载训练数据集
-    train_dataset = load_dataset(hf_dataset_name, name=hf_dataset_config, split=train_split, trust_remote_code=True)
-    
+    hf_train_dataset = load_dataset(hf_dataset_name, name=hf_dataset_config, split=train_split, trust_remote_code=True)
+    train_dataset = HFDatasetWrapper(hf_train_dataset, transform=None)
+
     # 加载验证数据集
-    try:
-        eval_dataset = load_dataset(hf_dataset_name, name=hf_dataset_config, split=eval_split, trust_remote_code=True)
-    except:
-        # 如果没有验证集，则使用测试集
-        try:
-            eval_dataset = load_dataset(hf_dataset_name, name=hf_dataset_config, split='test', trust_remote_code=True)
-        except:
-            # 如果也没有测试集，则从训练集中划分一部分作为验证集
-            eval_dataset = None
+    if eval_split:
+        hf_eval_dataset = load_dataset(hf_dataset_name, name=hf_dataset_config, split=eval_split, trust_remote_code=True)
+        eval_dataset = HFDatasetWrapper(hf_eval_dataset, transform=None)
+    else:
+        eval_dataset = None
     
     return {
         'train_dataset': train_dataset,

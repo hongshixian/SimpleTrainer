@@ -48,8 +48,11 @@ class WrapperForAudioClassification:
         processed_examples[model_input_name] = input_values[model_input_name].squeeze(0)
         # 处理标签
         if "label" in examples:
-            label2id = self.model.config.label2id
-            processed_examples["labels"] = label2id[examples["label"]]
+            if isinstance(examples["label"], str):
+                label2id = self.model.config.label2id
+                processed_examples["labels"] = label2id[examples["label"]]
+            else:
+                processed_examples["labels"] = examples["label"]
         return processed_examples
 
     def forward(self, *args, **kwargs):
@@ -86,8 +89,11 @@ class WrapperForImageClassification:
             image_data, return_tensors="pt")[model_input_name].squeeze(0)
         # 处理标签
         if "label" in examples:
-            label2id = self.model.config.label2id
-            processed_examples["labels"] = label2id[examples["label"]]
+            if isinstance(examples["label"], str):
+                label2id = self.model.config.label2id
+                processed_examples["labels"] = label2id[examples["label"]]
+            else:
+                processed_examples["labels"] = examples["label"]
         return processed_examples
 
     def forward(self, *args, **kwargs):
@@ -134,12 +140,11 @@ class WrapperForTextClassification:
 
         # 处理标签
         if "label" in examples:
-            label2id = self.model.config.label2id
-            if isinstance(examples["label"], list):
-                processed_examples["labels"] = torch.tensor([label2id[label] if isinstance(label, str) else label for label in examples["label"]], dtype=torch.long)
+            if isinstance(examples["label"], str):
+                label2id = self.model.config.label2id
+                processed_examples["labels"] = label2id[examples["label"]]
             else:
-                label = examples["label"]
-                processed_examples["labels"] = torch.tensor([label2id[label] if isinstance(label, str) else label], dtype=torch.long)
+                processed_examples["labels"] = examples["label"]
         
         return processed_examples
 
