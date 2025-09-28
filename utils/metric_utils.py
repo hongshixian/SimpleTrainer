@@ -53,6 +53,7 @@ def binary_metrics(positive_scores, binary_labels):
     # 计算EER
     eer = brentq(lambda x: 1. - x - interp1d(fpr, tpr)(x), 0., 1.)
     eer_threshold = interp1d(fpr, thresholds)(eer)
+    eer_threshold = eer_threshold.item()
     
     # 获取最接近0.5阈值的点
     idx = np.argmin(np.abs(thresholds - 0.5))

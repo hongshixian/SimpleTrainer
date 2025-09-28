@@ -1,10 +1,11 @@
 ### pipeline
-stage: clst
-experiment_name: 0919_debug_train_bert_local
+stage: clsft
+experiment_name: 0928_debug_train_bert_local
 
 ### model
 model_args:
-  model_type: bert_classifier
+  finetuning_task: "text-classification"
+  pretrained_model_name_or_path: "bert-base-uncased"
   # 示例使用情感分析数据集的标签映射
   id2label:
     0: "negative"
@@ -12,9 +13,6 @@ model_args:
   label2id:
     "negative": 0
     "positive": 1
-  model_name: bert-base-uncased
-  num_classes: 2
-  classifier_dropout: 0.1
 
 ### dataset
 # 使用本地jsonl文件数据集的配置示例
@@ -30,8 +28,10 @@ train_args:
   save_total_limit: 1
   num_train_epochs: 3
   per_device_train_batch_size: 2
+  gradient_accumulation_steps: 1
   per_device_eval_batch_size: 2
   warmup_steps: 10
+  lr_scheduler_type: "cosine"
   weight_decay: 0.01
   eval_strategy: steps
   eval_steps: 5

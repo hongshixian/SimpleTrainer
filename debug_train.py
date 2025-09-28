@@ -13,7 +13,7 @@ def get_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--config", "-c", type=str, 
-        default="examples/example_w2vbert2_classifier.yaml", 
+        default="examples/example_bert_classifier_local.yaml", 
         help="Path to the yaml config file.")
     args = parser.parse_args()
     return args

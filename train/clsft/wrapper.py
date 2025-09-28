@@ -5,6 +5,7 @@ from transformers import (
     PreTrainedModel,
 )
 from transformers import AutoConfig, AutoModelForAudioClassification, AutoFeatureExtractor
+from transformers import AutoTokenizer, AutoModelForSequenceClassification
 from transformers.modeling_outputs import SequenceClassifierOutput
 from typing import Optional, Union, Dict, Any
 import numpy as np
@@ -132,10 +133,8 @@ class WrapperForTextClassification:
         finetuning_task = model_args.get("finetuning_task")
         if finetuning_task in ["text-classification"]:
             # 加载分词器
-            from transformers import AutoTokenizer
             self.tokenizer = AutoTokenizer.from_pretrained(**model_args)
             # 加载模型
-            from transformers import AutoModelForSequenceClassification
             self.model = AutoModelForSequenceClassification.from_pretrained(**model_args)
             self.model.to(device)
         else:
@@ -161,7 +160,7 @@ class WrapperForTextClassification:
         
         # 处理主要输入
         processed_examples['input_ids'] = processed.input_ids.squeeze(0) if isinstance(text_data, str) else processed.input_ids
-        processed_examples['attention_mask'] = processed.attention_mask.squeeze(0) if isinstance(text_data, str) else processed.attention_mask
+        # processed_examples['attention_mask'] = processed.attention_mask.squeeze(0) if isinstance(text_data, str) else processed.attention_mask
 
         # 处理标签
         if "label" in examples:
