@@ -22,7 +22,8 @@ SimpleTrainer/
 ├── network/              # 网络模型定义（如ResNet等）
 ├── pretrained_model/     # 预训练模型定义和封装
 ├── train/                # 训练流程实现
-│   └── clst/             # 分类器训练流程
+│   ├── clst/             # 分类器训练流程
+│   └── clsft/            # 下游分类任务微调流程
 ├── utils/                # 工具函数
 ├── debug_train.py        # 调试训练脚本
 ├── train.py              # 训练入口文件
@@ -67,7 +68,7 @@ tensorboard --logdir logs
 
 配置文件使用 YAML 格式，主要包含以下几个部分：
 
-- `stage`: 训练阶段（目前支持 `clst` 分类器训练）
+- `stage`: 训练阶段（支持 `clst` 分类器训练和 `clsft` 下游分类任务微调）
 - `experiment_name`: 实验名称
 - `model_args`: 模型参数配置
 - `dataset_args`: 数据集配置
@@ -164,10 +165,17 @@ train_args:
 
 ## 支持的模型
 
+### 传统分类器模型（clst）
 - **ResNet 图像分类器**：基于ResNet架构的图像分类模型，适用于各种图像分类任务
 - **ViT 图像分类器**：基于Vision Transformer架构的图像分类模型，支持加载预训练的ViT模型
 - **Wav2Vec2 音频分类器**：基于Wav2Vec2架构的音频分类模型，适用于语音命令识别等音频分类任务
 - **BERT 文本分类器**：基于BERT架构的文本分类模型，支持各种文本分类任务
+
+### 预训练模型微调（clsft）
+- **BERT 系列模型**：支持各种基于BERT的预训练模型进行文本分类微调
+- **ViT 系列模型**：支持各种基于Vision Transformer的预训练模型进行图像分类微调
+- **Wav2Vec2 系列模型**：支持各种基于Wav2Vec2的预训练模型进行音频分类微调
+- **其他HuggingFace支持的预训练模型**：支持HuggingFace Transformers库中的其他预训练模型进行相应任务的微调
 
 ## 数据集格式
 
@@ -215,6 +223,28 @@ SimpleTrainer 支持两种数据集格式：
    ```bash
    python train.py --config your_config_file.yaml
    ```
+
+## 下游分类任务微调（clsft）使用说明
+
+### 训练
+
+要使用预训练模型进行下游分类任务微调，可以按照以下步骤操作：
+
+1. 准备数据集：可以使用Hugging Face Hub上的数据集或本地JSONL格式的数据集。
+
+2. 创建配置文件：参考 `examples/` 目录下的 `example_clsft_*` 系列配置文件创建自己的配置文件。
+
+3. 运行训练命令：
+   ```bash
+   python train.py --config your_clsft_config_file.yaml
+   ```
+
+### 支持的任务类型配置
+
+在配置文件中，通过设置 `model_args.finetuning_task` 参数来指定微调的任务类型：
+- `"text-classification"`: 文本分类任务
+- `"image-classification"`: 图像分类任务
+- `"audio-classification"`: 音频分类任务
 
 ## 许可证
 
