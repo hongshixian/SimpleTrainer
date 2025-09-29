@@ -147,12 +147,13 @@ def main():
             output_dir="./tmp_eval",  # 临时目录
             per_device_eval_batch_size=args.batch_size,
             remove_unused_columns=False,
+            dataloader_num_workers=4,
             dataloader_pin_memory=False,
         )
         
         # 创建评估器
         evaluator = Trainer(
-            model=eval_model,
+            model=model,
             args=training_args,
             compute_metrics=compute_metrics,
             eval_dataset=eval_dataset,
