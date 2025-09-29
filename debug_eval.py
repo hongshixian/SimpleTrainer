@@ -150,12 +150,6 @@ def main():
             dataloader_pin_memory=False,
         )
         
-        # 根据模型类型获取实际模型
-        if hasattr(model, 'model'):
-            eval_model = model.model
-        else:
-            eval_model = model
-        
         # 创建评估器
         evaluator = Trainer(
             model=eval_model,
