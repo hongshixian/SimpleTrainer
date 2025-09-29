@@ -200,8 +200,9 @@ def main():
     combined_metrics_df = pd.DataFrame(all_metrics)
     
     # 保存指标
-    combined_metrics_df.to_csv(args.output_path, index=False)
-    print(f"\nEvaluation metrics saved to {args.output_path}")
+    save_path = os.path.join(args.model_path, args.output_path)
+    combined_metrics_df.to_csv(save_path, index=False)
+    print(f"\nEvaluation metrics saved to {save_path}")
 
 
 if __name__ == "__main__":
