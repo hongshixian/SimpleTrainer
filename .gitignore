@@ -3,3 +3,4 @@ logs
 data_cache
 configs
 *.pyc
+.vscode

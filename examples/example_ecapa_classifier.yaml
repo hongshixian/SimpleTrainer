@@ -1,0 +1,39 @@
+### pipeline
+stage: clst
+experiment_name: 0929_debug_train_ecapa
+
+### model
+model_args:
+  model_type: ecapa_classifier
+  channel_size: 1024
+  classifier_dropout: 0.1
+  id2label:
+    0: "bonafide"
+    1: "spoof"
+  label2id:
+    "bonafide": 0
+    "spoof": 1
+
+### dataset
+dataset_args:
+  custom_dataset_name: "ASVSpoof2019LA"
+  custom_dataset_config: null
+  train_split: "train"
+  eval_split: "dev"
+
+### train
+train_args:
+  logging_steps: 10
+  save_steps: 500
+  save_total_limit: 1
+  num_train_epochs: 5
+  per_device_train_batch_size: 8
+  gradient_accumulation_steps: 1
+  per_device_eval_batch_size: 8
+  warmup_ratio: 0.1
+  learning_rate: 1.0e-5
+  lr_scheduler_type: "cosine"
+  weight_decay: 1.0e-4
+  eval_strategy: "steps"
+  eval_steps: 500
+  load_best_model_at_end: true
