@@ -62,5 +62,10 @@ def run_clsft(
     trainer.train()
     #
     trainer.save_model(best_save_dir)
+    #
+    if "tokenizer" in model.__dict__:
+        model.tokenizer.save_pretrained(best_save_dir)
+    if "processor" in model.__dict__:
+        model.processor.save_pretrained(best_save_dir)
 
     return

@@ -141,7 +141,11 @@ def get_custom_dataset(dataset_args: dict) -> dict:
     eval_split = dataset_args.get('eval_split')
 
     # 加载自定义数据集
-    train_dataset = custom_dataset_cls(split=train_split, **custom_dataset_args)
+    if train_split:
+        train_dataset = custom_dataset_cls(split=train_split, **custom_dataset_args)
+    else:
+        train_dataset = None
+        
     if eval_split:
         eval_dataset = custom_dataset_cls(split=eval_split, **custom_dataset_args)
     else:
