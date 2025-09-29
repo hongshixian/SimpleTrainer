@@ -148,7 +148,6 @@ def main():
             per_device_eval_batch_size=args.batch_size,
             remove_unused_columns=False,
             dataloader_pin_memory=False,
-            # dataloader_num_workers=8,
         )
         
         # 根据模型类型获取实际模型
