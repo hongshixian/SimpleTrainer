@@ -55,4 +55,4 @@ class ASVspoof2019_LA_Dataset(Dataset):
         self.transform = transform_fn
 
 
-custom_dataset_register('ASVSpoof2019LA', ASVspoof2019_LA_Dataset)
+custom_dataset_register('ASVspoof2019LA', ASVspoof2019_LA_Dataset)
