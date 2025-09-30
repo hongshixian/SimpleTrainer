@@ -20,7 +20,7 @@ class SpoofCelebDataset(Dataset):
         self.metadata = pd.read_csv(meta_csv_path)
         #
         # if split=="":
-        #     self.metadata = self.metadata.
+        #     self.metadata = self.metadata.sdas
         #
         self.metadata["audio_path"] = f"{data_root}/flac/{split}/" + self.metadata["file"]
         self.metadata["label"] = self.metadata["attack"]
