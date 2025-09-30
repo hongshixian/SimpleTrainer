@@ -7,11 +7,11 @@ from ..custom_datasets import custom_dataset_register
 
 class SpoofCelebDataset(Dataset):
     def __init__(
-        self, 
+        self,
         data_root: str,  # "/cache/datasets/spoofceleb/spoofceleb/",
         split: str = "eval",
         transform: callable = None,
-        ):
+    ):
         self.data_root = data_root
         self.transform = transform
         self.split = split
@@ -54,4 +54,4 @@ class SpoofCelebDataset(Dataset):
         self.transform = transform_fn
 
 
-custom_dataset_register('SpoofCeleb', SpoofCelebDataset)
+custom_dataset_register("SpoofCeleb", SpoofCelebDataset)

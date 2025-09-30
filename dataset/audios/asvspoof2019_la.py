@@ -6,11 +6,11 @@ from ..custom_datasets import custom_dataset_register
 
 class ASVspoof2019_LA_Dataset(Dataset):
     def __init__(
-        self, 
+        self,
         data_root: str,  # "F:/datasets/ASVSpoof2019LA/",
         split: str = "train",
         transform: callable = None,
-        ):
+    ):
         self.data_root = data_root
         self.transform = transform
         self.split = split
@@ -18,7 +18,9 @@ class ASVspoof2019_LA_Dataset(Dataset):
         suffix_map = {"train": "trn", "dev": "trl", "eval": "trl"}
         self.metadata = pd.read_csv(
             f"{data_root}/ASVspoof2019_LA_cm_protocols/ASVspoof2019.LA.cm.{split}.{suffix_map[split]}.txt",
-             sep=" ", header=None)
+            sep=" ",
+            header=None,
+        )
         #
         if split == "dev":
             self.metadata = self.metadata.sample(frac=0.1, random_state=42).reset_index(drop=True)
@@ -55,4 +57,4 @@ class ASVspoof2019_LA_Dataset(Dataset):
         self.transform = transform_fn
 
 
-custom_dataset_register('ASVspoof2019LA', ASVspoof2019_LA_Dataset)
+custom_dataset_register("ASVspoof2019LA", ASVspoof2019_LA_Dataset)

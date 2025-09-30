@@ -6,18 +6,18 @@ from ..custom_datasets import custom_dataset_register
 
 class ASVspoof2021_LA_Dataset(Dataset):
     def __init__(
-        self, 
+        self,
         data_root: str,  # "F:/datasets/ASVSpoof2021LA/",
         split: str = "eval",
         transform: callable = None,
-        ):
+    ):
         self.data_root = data_root
         self.transform = transform
         self.split = split
         # 读取metadata
         self.metadata = pd.read_csv(
-            f"{data_root}/ASVspoof2021_LA_cm_protocols/ASVspoof2021.LA.cm.{split}.txt",
-             sep=" ", header=None)
+            f"{data_root}/ASVspoof2021_LA_cm_protocols/ASVspoof2021.LA.cm.{split}.txt", sep=" ", header=None
+        )
         #
         self.metadata.columns = ["audio_name", "file_name", "_", "attack", "is_spoof"]
 
@@ -51,4 +51,4 @@ class ASVspoof2021_LA_Dataset(Dataset):
         self.transform = transform_fn
 
 
-custom_dataset_register('ASVspoof2021LA', ASVspoof2021_LA_Dataset)
+custom_dataset_register("ASVspoof2021LA", ASVspoof2021_LA_Dataset)
