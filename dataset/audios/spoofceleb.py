@@ -19,8 +19,8 @@ class SpoofCelebDataset(Dataset):
         meta_csv_path = os.path.join(data_root, f"metadata/{split}.csv")
         self.metadata = pd.read_csv(meta_csv_path)
         #
-        # if split=="":
-        #     self.metadata = self.metadata.sdas546
+        if split == "development":
+            self.metadata = self.metadata.sample(flac=0.1, random_state=42).reset_index(drop=True)
         #
         self.metadata["audio_path"] = f"{data_root}/flac/{split}/" + self.metadata["file"]
         self.metadata["label"] = self.metadata["attack"]
