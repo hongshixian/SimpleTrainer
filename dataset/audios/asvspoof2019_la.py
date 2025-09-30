@@ -7,7 +7,7 @@ from ..custom_datasets import custom_dataset_register
 class ASVspoof2019_LA_Dataset(Dataset):
     def __init__(
         self, 
-        data_root: str = "F:/datasets/ASVSpoof2019LA/",
+        data_root: str,  # "F:/datasets/ASVSpoof2019LA/",
         split: str = "train",
         transform: callable = None,
         ):

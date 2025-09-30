@@ -8,7 +8,7 @@ from ..custom_datasets import custom_dataset_register
 class SpoofCelebDataset(Dataset):
     def __init__(
         self, 
-        data_root: str = "/cache/datasets/spoofceleb/spoofceleb/",
+        data_root: str,  # "/cache/datasets/spoofceleb/spoofceleb/",
         split: str = "eval",
         transform: callable = None,
         ):
@@ -18,6 +18,9 @@ class SpoofCelebDataset(Dataset):
         # 读取metadata
         meta_csv_path = os.path.join(data_root, f"metadata/{split}.csv")
         self.metadata = pd.read_csv(meta_csv_path)
+        #
+        # if split=="":
+        #     self.metadata = self.metadata.
         #
         self.metadata["audio_path"] = f"{data_root}/flac/{split}/" + self.metadata["file"]
         self.metadata["label"] = self.metadata["attack"]

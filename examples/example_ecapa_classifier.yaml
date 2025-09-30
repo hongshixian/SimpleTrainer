@@ -16,8 +16,9 @@ model_args:
 
 ### dataset
 dataset_args:
-  custom_dataset_name: "ASVSpoof2019LA"
-  custom_dataset_config: null
+  custom_dataset_name: "ASVspoof2019LA"
+  custom_dataset_args: 
+    data_root: "/mnt/f/datasets/ASVSpoof2019LA/"
   train_split: "train"
   eval_split: "dev"
 
